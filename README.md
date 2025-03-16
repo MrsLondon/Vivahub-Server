@@ -1,6 +1,6 @@
 # VivaHub - Backend
 
-VivaHub is a modern beauty salon booking platform, inspired by TreatWell, that enables customers to find salons, book appointments, and make secure payments. The backend is built with Express.js and MongoDB, providing authentication, service listings, and booking management.
+VivaHub is a modern beauty salon booking platform, that enables customers to find salons, book appointments, and make secure payments. The backend is built with Express.js and MongoDB, providing authentication, service listings, and booking management.
 
 ## Features
 
