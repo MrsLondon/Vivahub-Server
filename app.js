@@ -1,4 +1,4 @@
-require("dotenv").config(); // Load enlkvironment variables from .env
+require("dotenv").config(); // Load environment variables from .env
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
@@ -23,9 +23,9 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// Basic route
-app.get("/", (req, res) => {
-  res.send("VivaHub Backend is Running!");
+// API Routes
+app.get("/api", (req, res) => {
+  res.json({ message: "VivaHub Backend is Running!" });
 });
 
 // Start the server
