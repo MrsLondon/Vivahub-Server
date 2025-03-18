@@ -19,6 +19,18 @@ const userSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  role: {
+    type: String,
+    enum: ['customer', 'business'],
+    required: true
+  },
+  // Additional fields for business users
+  businessDetails: {
+    businessName: String,
+    address: String,
+    phone: String,
+    description: String
+  },
   createdAt: {
     type: Date,
     default: Date.now
