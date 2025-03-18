@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
+const authRoutes = require('./routes/auth');
 
 const app = express();
 
@@ -23,7 +24,10 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// API Routes
+// Routes
+app.use('/api/auth', authRoutes);
+
+// Basic route
 app.get("/api", (req, res) => {
   res.json({ message: "VivaHub Backend is Running!" });
 });
