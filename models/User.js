@@ -29,12 +29,14 @@ const userSchema = new mongoose.Schema({
     businessName: String,
     address: String,
     phone: String,
-    description: String
+    services: [String],
   },
   createdAt: {
     type: Date,
     default: Date.now
   }
+}, {
+  timestamps: true,
 });
 
 // Hash password before saving
