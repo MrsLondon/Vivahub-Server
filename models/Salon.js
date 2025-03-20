@@ -16,6 +16,12 @@ const salonSchema = new mongoose.Schema({
     ref: "User", // Reference to the user model (business owner)
     required: true,
   },
+  phone: {
+    type: String,
+    required: true, // Make it required if every salon must have a phone number
+    trim: true,
+    match: [/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"], // Regex for phone number validation
+  },
   services: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,5 +34,6 @@ const salonSchema = new mongoose.Schema({
     default: Date.now,
   },
 });
+
 const Salon = mongoose.model("Salon", salonSchema);
 module.exports = Salon;
