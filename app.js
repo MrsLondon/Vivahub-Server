@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const authRoutes = require("./routes/auth");
 const salonRoutes = require("./routes/salon");
 const serviceRoutes = require("./routes/service");
+const bookingRoutes = require("./routes/booking");
 
 const app = express();
 
@@ -30,6 +31,7 @@ mongoose
 app.use("/api/auth", authRoutes);
 app.use("/api/salon", salonRoutes);
 app.use("/api/service", serviceRoutes);
+app.use("/api/booking", bookingRoutes);
 
 // Basic route
 app.get("/api", (req, res) => {
