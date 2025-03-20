@@ -3,7 +3,9 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
-const authRoutes = require('./routes/auth');
+const authRoutes = require("./routes/auth");
+const salonRoutes = require("./routes/salon");
+const serviceRoutes = require("./routes/service");
 
 const app = express();
 
@@ -25,7 +27,9 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/salon", salonRoutes);
+app.use("/api/service", serviceRoutes);
 
 // Basic route
 app.get("/api", (req, res) => {
