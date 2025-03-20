@@ -21,7 +21,7 @@ const serviceSchema = new mongoose.Schema({
     type: Number, // duration in minutes
     required: true,
   },
-  salonId: {
+  salon: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Salon", // Reference to Salon model
     required: true,
