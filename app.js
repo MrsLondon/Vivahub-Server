@@ -20,10 +20,7 @@ console.log("MONGO_URI:", process.env.MONGO_URI);
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
@@ -36,6 +33,19 @@ app.use("/api/booking", bookingRoutes);
 // Basic route
 app.get("/api", (req, res) => {
   res.json({ message: "VivaHub Backend is Running!" });
+});
+
+// Root route
+app.get("/", (req, res) => {
+  res.json({
+    message: "Welcome to VivaHub API",
+    endpoints: {
+      auth: "/api/auth",
+      salon: "/api/salon",
+      service: "/api/service",
+      booking: "/api/booking"
+    }
+  });
 });
 
 // Start the server

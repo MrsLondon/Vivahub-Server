@@ -1,11 +1,12 @@
 {
   "name": "vivahub-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend for VivaHub - Beauty Salon Booking Platform",
   "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
     "start": "node app.js",
+    "seed": "node seeds/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

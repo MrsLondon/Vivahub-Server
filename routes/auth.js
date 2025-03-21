@@ -6,7 +6,7 @@ const User = require('../models/User');
 // Register new user
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, name, role, businessDetails } = req.body;
+    const { email, password, firstName, lastName, role, businessDetails } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -18,7 +18,8 @@ router.post('/register', async (req, res) => {
     const user = new User({
       email,
       password,
-      name,
+      firstName,
+      lastName,
       role,
       ...(role === 'business' && { businessDetails })
     });
@@ -38,7 +39,8 @@ router.post('/register', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
         businessDetails: user.businessDetails
       }
@@ -78,7 +80,8 @@ router.post('/login', async (req, res) => {
       user: {
         id: user._id,
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
         role: user.role,
         businessDetails: user.businessDetails
       }
