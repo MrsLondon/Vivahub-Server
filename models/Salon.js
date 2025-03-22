@@ -1,9 +1,14 @@
 const mongoose = require("mongoose");
+
 // Defining schema for Salon
 const salonSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
     trim: true, // Automatically removes whitespace from the beginning and end of the string
   },
   location: {
@@ -13,23 +18,36 @@ const salonSchema = new mongoose.Schema({
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User", // Reference to the user model (business owner)
+    ref: "User",
     required: true,
   },
   phone: {
     type: String,
-    required: true, // Make it required if every salon must have a phone number
+    required: true,
     trim: true,
-    match: [/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"], // Regex for phone number validation
+    match: [/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"],
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+    match: [/.+@.+\..+/, "Please enter a valid email address"],
+  },
+  businessType: {
+    type: String,
+    trim: true,
+  },
+  openingHours: {
+    type: Object, // store opening hours as an object
+    required: true,
   },
   services: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Reference to the user model (business owner)
+      ref: "User",
     },
   ],
   createdAt: {
-    // Date when the salon was created
     type: Date,
     default: Date.now,
   },
