@@ -14,14 +14,17 @@ const isBusiness = (req, res, next) => {
 
 // POST /api/salons - Add a new salon (business only)
 router.post("/", authenticateUser, isBusiness, async (req, res, next) => {
-  const { name, location } = req.body;
+  const { name, location, email, openingHours, phone } = req.body; // Add phone
 
   try {
-    // Create a new salon to the authenticated user
+    // Create a new salon for the authenticated user
     const newSalon = await Salon.create({
       name,
       location,
-      owner: req.user.userId, // associate the salon with the authenticated user
+      email, // Including email
+      openingHours, // Icluding openingHours
+      phone, // including phone
+      owner: req.user.userId, // Associating the salon with the authenticated user
     });
 
     res.status(201).json(newSalon);
@@ -34,9 +37,9 @@ router.post("/", authenticateUser, isBusiness, async (req, res, next) => {
 // GET /api/salons - Get all salons
 router.get("/", async (req, res, next) => {
   try {
-    // fetch all salons from the data base and populate the owner field
+    // Fetch all salons from the database and populate the owner field
     const salons = await Salon.find().populate("owner");
-    res.json(salons);
+    res.json(salons); // return all fields, including email, openingHours and phone
   } catch (error) {
     next(error);
   }
@@ -51,12 +54,13 @@ router.get("/:id", async (req, res, next) => {
     const salon = await Salon.findById(id)
       .populate("owner", "name email") // Populate the owner field with name and email
       .populate("services"); // Populate the services field
+
     // Verify if the salon exists
     if (!salon) {
       return res.status(404).json({ message: "Salon not found" });
     }
 
-    res.status(200).json(salon);
+    res.status(200).json(salon); // return all fields, including email, openingHours and phone
   } catch (error) {
     console.log("Error fetching salon by ID:", error.message);
     next(error);
@@ -67,7 +71,7 @@ router.get("/:id", async (req, res, next) => {
 router.put("/:id", authenticateUser, isBusiness, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, location } = req.body;
+    const { name, location, email, openingHours, phone } = req.body; // Add phone
 
     // Search for the salon by ID
     const salon = await Salon.findById(id);
@@ -87,6 +91,9 @@ router.put("/:id", authenticateUser, isBusiness, async (req, res, next) => {
     // Update the salon info
     if (name) salon.name = name;
     if (location) salon.location = location;
+    if (email) salon.email = email; // updating email
+    if (openingHours) salon.openingHours = openingHours; // updating openingHours
+    if (phone) salon.phone = phone; // updating phone
 
     // Save the updated salon
     const updatedSalon = await salon.save();
