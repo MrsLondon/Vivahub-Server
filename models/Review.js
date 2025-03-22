@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 // Defining schema for Review
 const reviewSchema = new mongoose.Schema({
-  custumerId: {
+  customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User", // Reference to the user model
     required: true,
@@ -39,6 +39,16 @@ const reviewSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  }
+});
+
+// Update the updatedAt timestamp before saving
+reviewSchema.pre('save', function(next) {
+  this.updatedAt = new Date();
+  next();
 });
 
 const Review = mongoose.model("Review", reviewSchema);
