@@ -59,14 +59,20 @@ router.post("/", authenticateUser, isCustomer, async (req, res, next) => {
     // Create a new review
     const newReview = await Review.create({
       bookingId,
-      custumerId: booking.customerId, // Extracted from the booking
-      salonId: booking.salonId, // Extracted from the booking
-      serviceId: booking.serviceId, // Extracted from the booking
+      customerId: booking.customerId,
+      salonId: booking.salonId,
+      serviceId: booking.serviceId,
       rating,
       comment,
     });
 
-    res.status(201).json(newReview);
+    // Populate the created review with related data
+    const populatedReview = await Review.findById(newReview._id)
+      .populate('customerId', 'firstName lastName')
+      .populate('salonId', 'name')
+      .populate('serviceId', 'name');
+
+    res.status(201).json(populatedReview);
   } catch (error) {
     console.error("Error creating review:", error.message);
     next(error);
@@ -76,7 +82,11 @@ router.post("/", authenticateUser, isCustomer, async (req, res, next) => {
 // GET /api/review - Get all reviews
 router.get("/", async (req, res, next) => {
   try {
-    const reviews = await Review.find();
+    const reviews = await Review.find()
+      .populate('customerId', 'firstName lastName')
+      .populate('salonId', 'name')
+      .populate('serviceId', 'name')
+      .sort({ createdAt: -1 });
     res.json(reviews);
   } catch (error) {
     console.error("Error fetching reviews:", error.message);
@@ -84,10 +94,51 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+// GET /api/review/salon/:salonId - Get reviews by salon
+router.get("/salon/:salonId", async (req, res, next) => {
+  try {
+    const reviews = await Review.find({ salonId: req.params.salonId })
+      .populate('customerId', 'firstName lastName')
+      .populate('serviceId', 'name')
+      .sort({ createdAt: -1 });
+    
+    if (!reviews.length) {
+      return res.status(404).json({ message: "No reviews found for this salon." });
+    }
+
+    res.json(reviews);
+  } catch (error) {
+    console.error("Error fetching salon reviews:", error.message);
+    next(error);
+  }
+});
+
+// GET /api/review/service/:serviceId - Get reviews by service
+router.get("/service/:serviceId", async (req, res, next) => {
+  try {
+    const reviews = await Review.find({ serviceId: req.params.serviceId })
+      .populate('customerId', 'firstName lastName')
+      .populate('salonId', 'name')
+      .sort({ createdAt: -1 });
+    
+    if (!reviews.length) {
+      return res.status(404).json({ message: "No reviews found for this service." });
+    }
+
+    res.json(reviews);
+  } catch (error) {
+    console.error("Error fetching service reviews:", error.message);
+    next(error);
+  }
+});
+
 // GET /api/review/:id - Get a specific review by ID
 router.get("/:id", async (req, res, next) => {
   try {
-    const review = await Review.findById(req.params.id);
+    const review = await Review.findById(req.params.id)
+      .populate('customerId', 'firstName lastName')
+      .populate('salonId', 'name')
+      .populate('serviceId', 'name');
 
     if (!review) {
       return res.status(404).json({ message: "Review not found." });
@@ -100,7 +151,7 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-// PUT /api/reviews/:id - Update a review (customer only)
+// PUT /api/review/:id - Update a review (customer only)
 router.put("/:id", authenticateUser, isCustomer, async (req, res, next) => {
   const { rating, comment } = req.body;
 
@@ -112,7 +163,7 @@ router.put("/:id", authenticateUser, isCustomer, async (req, res, next) => {
     }
 
     // Verify if the review belongs to the authenticated user
-    if (review.custumerId.toString() !== req.user.userId) {
+    if (review.customerId.toString() !== req.user.userId) {
       return res.status(403).json({
         message: "Access denied. You can only update your own reviews.",
       });
@@ -124,9 +175,39 @@ router.put("/:id", authenticateUser, isCustomer, async (req, res, next) => {
 
     await review.save();
 
-    res.json({ message: "Review updated successfully.", review });
+    // Populate the updated review with related data
+    const updatedReview = await Review.findById(review._id)
+      .populate('customerId', 'firstName lastName')
+      .populate('salonId', 'name')
+      .populate('serviceId', 'name');
+
+    res.json({ message: "Review updated successfully.", review: updatedReview });
   } catch (error) {
     console.error("Error updating review:", error.message);
+    next(error);
+  }
+});
+
+// DELETE /api/review/:id - Delete a review (customer only)
+router.delete("/:id", authenticateUser, isCustomer, async (req, res, next) => {
+  try {
+    const review = await Review.findById(req.params.id);
+
+    if (!review) {
+      return res.status(404).json({ message: "Review not found." });
+    }
+
+    // Verify if the review belongs to the authenticated user
+    if (review.customerId.toString() !== req.user.userId) {
+      return res.status(403).json({
+        message: "Access denied. You can only delete your own reviews.",
+      });
+    }
+
+    await review.deleteOne();
+    res.json({ message: "Review deleted successfully." });
+  } catch (error) {
+    console.error("Error deleting review:", error.message);
     next(error);
   }
 });

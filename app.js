@@ -8,6 +8,7 @@ const salonRoutes = require("./routes/salon");
 const serviceRoutes = require("./routes/service");
 const bookingRoutes = require("./routes/booking");
 const reviewRoutes = require("./routes/review");
+const viewDataRoutes = require("./routes/viewData");
 
 const app = express();
 
@@ -27,10 +28,11 @@ mongoose
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/salon", salonRoutes);
-app.use("/api/service", serviceRoutes);
-app.use("/api/booking", bookingRoutes);
-app.use("/api/review", reviewRoutes);
+app.use("/api/salons", salonRoutes);
+app.use("/api/services", serviceRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/data", viewDataRoutes);
 
 // Basic route
 app.get("/api", (req, res) => {
@@ -43,11 +45,17 @@ app.get("/", (req, res) => {
     message: "Welcome to VivaHub API",
     endpoints: {
       auth: "/api/auth",
-      salon: "/api/salon",
-      service: "/api/service",
-      booking: "/api/booking"
+      salon: "/api/salons",
+      service: "/api/services",
+      booking: "/api/bookings"
     }
   });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: "Something went wrong!" });
 });
 
 // Start the server
