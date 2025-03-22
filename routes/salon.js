@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Salon = require("../models/Salon");
-const authenticateUser = require("../middlewares/authMiddleware"); // Middleware de autenticação
+const authenticateUser = require("../middlewares/authMiddleware");
 
 // Middleware to check if the user is a business owner
 const isBusiness = (req, res, next) => {
@@ -14,14 +14,22 @@ const isBusiness = (req, res, next) => {
 
 // POST /api/salons - Add a new salon (business only)
 router.post("/", authenticateUser, isBusiness, async (req, res, next) => {
-  const { name, location } = req.body;
+  const { name, longitude, latitude } = req.body;
 
   try {
-    // Create a new salon to the authenticated user
+    // Validate required fields
+    if (!name || !longitude || !latitude) {
+      return res.status(400).json({ message: "Please provide all required fields." });
+    }
+
+    // Create a new salon with geolocation
     const newSalon = await Salon.create({
       name,
-      location,
-      owner: req.user.userId, // associate the salon with the authenticated user
+      location: {
+        type: "Point",
+        coordinates: [longitude, latitude], // GeoJSON format
+      },
+      owner: req.user.userId,
     });
 
     res.status(201).json(newSalon);

@@ -88,4 +88,43 @@ router.post('/login', async (req, res) => {
   }
 });
 
+ // Fetch All Salons
+ router.get("/", async (req, res, next) => {
+  try {
+    const salons = await Salon.find();
+    res.status(200).json(salons);
+  } catch (error) {
+    console.log("Error fetching salons:", error.message);
+    next(error);
+  }
+});
+
+// Find Nearby Salons
+router.get("/nearby", async (req, res, next) => {
+  const { longitude, latitude, maxDistance } = req.query;
+
+  try {
+    if (!longitude || !latitude) {
+      return res.status(400).json({ message: "Please provide longitude and latitude." });
+    }
+
+    const salons = await Salon.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(longitude), parseFloat(latitude)],
+          },
+          $maxDistance: parseInt(maxDistance) || 5000, // Default: 5km
+        },
+      },
+    });
+
+    res.status(200).json(salons);
+  } catch (error) {
+    console.log("Error finding nearby salons:", error.message);
+    next(error);
+  }
+});
+
 module.exports = router; 

@@ -4,14 +4,14 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 
-// Book an appointment (Customer Only)
+// Book an appointment with location
 router.post('/bookings', authMiddleware, async (req, res) => {
   try {
-    const { salonId, serviceId, appointmentDate, appointmentTime } = req.body;
+    const { salonId, serviceId, appointmentDate, appointmentTime, longitude, latitude } = req.body;
     const customerId = req.user.userId;
 
     // Validate required fields
-    if (!salonId || !serviceId || !appointmentDate || !appointmentTime) {
+    if (!salonId || !serviceId || !appointmentDate || !appointmentTime || !longitude || !latitude) {
       return res.status(400).json({ message: 'Please fill in all required fields' });
     }
 
@@ -33,13 +33,17 @@ router.post('/bookings', authMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Time slot is already booked' });
     }
 
-    // Create new booking
+    // Create new booking with location
     const newBooking = new Booking({
       customerId,
       salonId,
       serviceId,
       appointmentDate,
       appointmentTime,
+      location: {
+        type: 'Point',
+        coordinates: [longitude, latitude],
+      },
     });
 
     await newBooking.save();
