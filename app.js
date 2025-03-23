@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const morgan = require("morgan");
+const path = require("path");
+const exphbs = require("express-handlebars");
 const authRoutes = require("./routes/auth");
 const salonRoutes = require("./routes/salon");
 const serviceRoutes = require("./routes/service");
@@ -12,10 +14,16 @@ const viewDataRoutes = require("./routes/viewData");
 
 const app = express();
 
+// Handlebars setup
+app.engine('handlebars', exphbs.engine());
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
+
 // Middleware
 app.use(express.json());
 app.use(cors());
 app.use(morgan("dev"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Log MONGO_URI to verify it's being loaded
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -34,22 +42,35 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/data", viewDataRoutes);
 
+// Root route - Data Viewer
+app.get("/", async (req, res) => {
+  try {
+    const [salons, services, bookings, users, reviews] = await Promise.all([
+      require("./models/Salon").find(),
+      require("./models/Service").find(),
+      require("./models/Booking").find(),
+      require("./models/User").find(),
+      require("./models/Review").find()
+    ]);
+
+    const endpoints = [
+      { name: 'Salons', path: '/api/salons', description: 'View all salons and their services', count: salons.length },
+      { name: 'Services', path: '/api/services', description: 'View all available services', count: services.length },
+      { name: 'Bookings', path: '/api/bookings', description: 'View all bookings with related data', count: bookings.length },
+      { name: 'Users', path: '/api/users', description: 'View all users (passwords excluded)', count: users.length },
+      { name: 'Reviews', path: '/api/reviews', description: 'View all reviews with user and salon details', count: reviews.length }
+    ];
+
+    res.render('index', { endpoints });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 // Basic route
 app.get("/api", (req, res) => {
   res.json({ message: "VivaHub Backend is Running!" });
-});
-
-// Root route
-app.get("/", (req, res) => {
-  res.json({
-    message: "Welcome to VivaHub API",
-    endpoints: {
-      auth: "/api/auth",
-      salon: "/api/salons",
-      service: "/api/services",
-      booking: "/api/bookings"
-    }
-  });
 });
 
 // Error handling middleware
