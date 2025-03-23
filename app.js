@@ -36,11 +36,31 @@ app.use(express.static(path.join(__dirname, "public")));
 // Log MONGO_URI to verify it's being loaded
 console.log("MONGO_URI:", process.env.MONGO_URI);
 
-// Connect to MongoDB
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+// MongoDB connection with retries
+const connectWithRetry = async () => {
+  const maxRetries = 5;
+  let retries = 0;
+
+  while (retries < maxRetries) {
+    try {
+      await mongoose.connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
+        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      });
+      console.log("Connected to MongoDB");
+      return true;
+    } catch (err) {
+      console.error(`MongoDB connection attempt ${retries + 1} failed:`, err.message);
+      retries++;
+      if (retries === maxRetries) {
+        console.error("Max retries reached. Could not connect to MongoDB");
+        return false;
+      }
+      // Wait for 5 seconds before retrying
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+  }
+};
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -52,12 +72,17 @@ app.use("/api/reviews", reviewRoutes);
 // Root route - Data Viewer
 app.get("/", async (req, res) => {
   try {
+    // Check MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error('MongoDB connection is not ready');
+    }
+
     const [salons, services, bookings, users, reviews] = await Promise.all([
-      Salon.find(),
-      Service.find(),
-      Booking.find(),
-      User.find(),
-      Review.find()
+      Salon.find().exec(),
+      Service.find().exec(),
+      Booking.find().exec(),
+      User.find().exec(),
+      Review.find().exec()
     ]);
 
     const endpoints = [
@@ -71,7 +96,11 @@ app.get("/", async (req, res) => {
     res.render('index', { endpoints });
   } catch (error) {
     console.error('Error:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ 
+      error: 'Internal Server Error',
+      message: error.message,
+      mongoState: mongoose.connection.readyState 
+    });
   }
 });
 
@@ -83,10 +112,22 @@ app.get("/api", (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: "Something broke!" });
+  res.status(500).json({ error: "Something broke!", message: err.message });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+
+// Start server only after MongoDB connects
+const startServer = async () => {
+  const connected = await connectWithRetry();
+  if (connected) {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } else {
+    console.error("Could not start server due to MongoDB connection failure");
+    process.exit(1);
+  }
+};
+
+startServer();
