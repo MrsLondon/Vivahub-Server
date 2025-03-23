@@ -19,6 +19,7 @@ const salonRoutes = require("./routes/salon");
 const serviceRoutes = require("./routes/service");
 const bookingRoutes = require("./routes/booking");
 const reviewRoutes = require("./routes/review");
+const userRoutes = require("./routes/user");
 
 const app = express();
 
@@ -68,6 +69,7 @@ app.use("/api/salons", salonRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
+app.use("/api/users", userRoutes);
 
 // Root route - Data Viewer
 app.get("/", async (req, res) => {
