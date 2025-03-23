@@ -10,7 +10,6 @@ const salonRoutes = require("./routes/salon");
 const serviceRoutes = require("./routes/service");
 const bookingRoutes = require("./routes/booking");
 const reviewRoutes = require("./routes/review");
-const viewDataRoutes = require("./routes/viewData");
 
 const app = express();
 
@@ -40,7 +39,6 @@ app.use("/api/salons", salonRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
-app.use("/api/data", viewDataRoutes);
 
 // Root route - Data Viewer
 app.get("/", async (req, res) => {
@@ -68,7 +66,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-// Basic route
+// API info route
 app.get("/api", (req, res) => {
   res.json({ message: "VivaHub Backend is Running!" });
 });
@@ -76,9 +74,10 @@ app.get("/api", (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!" });
+  res.status(500).json({ error: "Something broke!" });
 });
 
-// Start the server
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
