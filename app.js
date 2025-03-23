@@ -5,6 +5,15 @@ const mongoose = require("mongoose");
 const morgan = require("morgan");
 const path = require("path");
 const exphbs = require("express-handlebars");
+
+// Import your MongoDB models
+const Salon = require("./models/Salon");
+const Booking = require("./models/Booking");
+const User = require("./models/User");
+const Review = require("./models/Review");
+const Service = require("./models/Service");
+
+// Import routes
 const authRoutes = require("./routes/auth");
 const salonRoutes = require("./routes/salon");
 const serviceRoutes = require("./routes/service");
@@ -44,11 +53,11 @@ app.use("/api/reviews", reviewRoutes);
 app.get("/", async (req, res) => {
   try {
     const [salons, services, bookings, users, reviews] = await Promise.all([
-      require("./models/Salon").find(),
-      require("./models/Service").find(),
-      require("./models/Booking").find(),
-      require("./models/User").find(),
-      require("./models/Review").find()
+      Salon.find(),
+      Service.find(),
+      Booking.find(),
+      User.find(),
+      Review.find()
     ]);
 
     const endpoints = [
