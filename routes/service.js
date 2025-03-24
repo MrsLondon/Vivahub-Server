@@ -15,7 +15,7 @@ const isBusiness = (req, res, next) => {
 
 // POST /api/services - Add a new service (business only)
 router.post("/", authenticateUser, isBusiness, async (req, res, next) => {
-  const { name, description, price, duration } = req.body;
+  const { name, description, price, duration, languageSpoken } = req.body;
 
   try {
     // Search for the salon of the authenticated user
@@ -24,24 +24,45 @@ router.post("/", authenticateUser, isBusiness, async (req, res, next) => {
       return res.status(404).json({ message: "No salon found for this user." });
     }
 
-    // Crreate a new service for the salon
+    // Garanty that languagesSpoken is an array
+    if (!Array.isArray(salon.languageSpoken)) {
+      salon.languageSpoken = [];
+    }
+
+    // Create a new service for the salon
     const newService = await Service.create({
       name,
       description,
       price,
       duration,
-      salon: salon._id, // associate the service with the salon
+      languageSpoken,
+      salon: salon._id, // Associate the service with the salon
     });
 
-    // Add the service to the salon's services array
+    // Add the service to the salon's services array and update languagesSpoken
     salon.services.push(newService._id);
+    const allLanguages = new Set([
+      ...(salon.languageSpoken || []), // Guarantee that languagesSpoken is an array
+      ...languageSpoken,
+    ]);
+    salon.languageSpoken = Array.from(allLanguages); // Remove duplicates
+
+    // Save the updated salon (only once)
     await salon.save();
 
+    // Send the response
     res.status(201).json(newService);
   } catch (error) {
     console.error("Error creating service:", error.message);
     next(error);
   }
+});
+
+// GET /api/services/languages - Get all supported languages
+const languages = require("../utils/languages");
+
+router.get("/languages", (req, res) => {
+  res.status(200).json(languages);
 });
 
 // GET /api/services - Get all services
@@ -57,6 +78,11 @@ router.get("/", async (req, res, next) => {
 // GET /api/services/:id - Get service by ID
 router.get("/:id", async (req, res, next) => {
   try {
+    // Validate if the ID is a valid ObjectId
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid service ID format" });
+    }
+
     const service = await Service.findById(req.params.id).populate("salon");
     if (!service) {
       return res.status(404).json({ message: "Service not found" });
@@ -69,7 +95,7 @@ router.get("/:id", async (req, res, next) => {
 
 // PUT /api/service/:id - Update service (business only)
 router.put("/:id", authenticateUser, isBusiness, async (req, res, next) => {
-  const { name, description, price, duration } = req.body;
+  const { name, description, price, duration, languageSpoken } = req.body;
 
   try {
     // Verify if the service exists and belongs to the authenticated user
@@ -95,7 +121,7 @@ router.put("/:id", authenticateUser, isBusiness, async (req, res, next) => {
     // Update the service
     const updatedService = await Service.findByIdAndUpdate(
       req.params.id,
-      { name, description, price, duration },
+      { name, description, price, duration, languageSpoken },
       { new: true, runValidators: true } // runValidators guarantees that the new data will be validated
     );
 
@@ -122,7 +148,6 @@ router.delete("/:id", authenticateUser, isBusiness, async (req, res, next) => {
 
     // Verify if the salon belongs to the authenticated user
     if (salon.owner.toString() !== req.user.userId) {
-      // Use req.user.userId
       return res.status(403).json({
         message: "Access denied. You are not the owner of this salon.",
       });

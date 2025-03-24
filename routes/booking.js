@@ -8,40 +8,50 @@ const Salon = require("../models/Salon");
 /**
  * POST /api/bookings
  * Create a new booking for a service
- * 
+ *
  * This endpoint handles the creation of a new booking with the following features:
  * 1. Validates required fields
  * 2. Checks for time slot conflicts with other bookings
  * 3. Ensures the service exists
  * 4. Validates date and time format
  * 5. Returns populated booking data
- * 
+ *
  * @route POST /api/bookings
  * @access Private (Customer only)
  */
 router.post("/", authMiddleware, async (req, res) => {
   try {
+    console.log("Request body:", req.body); // Log to verify request body
     // Extract booking details from request body
-    const { salonId, serviceId, appointmentDate, appointmentTime } = req.body;
+    const { serviceId, appointmentDate, appointmentTime } = req.body;
     const customerId = req.user.userId; // Get customer ID from authenticated user
 
     // Validate that all required fields are provided
-    if (!salonId || !serviceId || !appointmentDate || !appointmentTime) {
+    if (!serviceId || !appointmentDate || !appointmentTime) {
+      console.log("Missing required fields"); // Log to verify missing fields
       return res
         .status(400)
         .json({ message: "Please fill in all required fields" });
+    }
+
+    // Serch for the service by ID
+    const service = await Service.findById(serviceId);
+    if (!service) {
+      return res.status(404).json({ message: "Service not found" });
+    }
+
+    // Search for the salon associated with the service
+    const salon = await Salon.findById(service.salon);
+    if (!salon) {
+      return res
+        .status(404)
+        .json({ message: "Salon associated with this service not found" });
     }
 
     // Convert appointment date and time to a single Date object for validation
     const appointmentStart = new Date(`${appointmentDate}T${appointmentTime}`);
     if (isNaN(appointmentStart.getTime())) {
       return res.status(400).json({ message: "Invalid date or time format" });
-    }
-
-    // Fetch the service to get its duration and verify it exists
-    const service = await Service.findById(serviceId);
-    if (!service) {
-      return res.status(404).json({ message: "Service not found" });
     }
 
     // Calculate the end time of the appointment based on service duration
@@ -122,7 +132,7 @@ router.post("/", authMiddleware, async (req, res) => {
     // Create new booking with validated data
     const newBooking = new Booking({
       customerId,
-      salonId,
+      salonId: salon._id, // Associating the booking with the salon of the service
       serviceId,
       appointmentDate,
       appointmentTime,
@@ -134,9 +144,9 @@ router.post("/", authMiddleware, async (req, res) => {
     // Populate the booking with related data (customer, salon, service details)
     // This ensures the frontend receives complete information without additional API calls
     const populatedBooking = await Booking.findById(newBooking._id)
-      .populate('customerId', 'firstName lastName') // Get customer's name
-      .populate('salonId', 'name') // Get salon name
-      .populate('serviceId', 'name price duration'); // Get service details
+      .populate("customerId", "firstName lastName") // Get customer's name
+      .populate("salonId", "name") // Get salon name
+      .populate("serviceId", "name price duration"); // Get service details
 
     // Return success response with populated booking data
     res.status(201).json({
@@ -144,27 +154,32 @@ router.post("/", authMiddleware, async (req, res) => {
       booking: populatedBooking,
     });
   } catch (error) {
+    console.error("Error booking appointment:", error.message);
     // Handle any errors that occur during the booking process
-    res.status(500).json({ message: "Error booking appointment", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error booking appointment", error: error.message });
   }
 });
 
 /**
  * GET /api/bookings
  * Get all bookings with optional role-based filtering
- * 
+ *
  * This endpoint returns bookings based on the user's role:
  * - Customers see only their own bookings
  * - Business owners see bookings for their salon
- * 
+ *
  * @route GET /api/bookings
  * @access Private
  */
+
+// Route to get user's bookings (based on role)
 router.get("/", authMiddleware, async (req, res) => {
   try {
     // Initialize query object for filtering bookings
     const query = {};
-    
+
     // Filter bookings based on user role
     if (req.user.role === "customer") {
       // Customers can only see their own bookings
@@ -179,36 +194,40 @@ router.get("/", authMiddleware, async (req, res) => {
 
     // Find bookings matching the query and populate related data
     const bookings = await Booking.find(query)
-      .populate('customerId', 'firstName lastName') // Get customer details
-      .populate('salonId', 'name') // Get salon details
-      .populate('serviceId', 'name price duration') // Get service details
+      .populate("customerId", "firstName lastName") // Get customer details
+      .populate("salonId", "name") // Get salon details
+      .populate("serviceId", "name price duration") // Get service details
       .sort({ appointmentDate: 1, appointmentTime: 1 }); // Sort by date and time
 
     // Return the filtered and populated bookings
     res.json(bookings);
   } catch (error) {
     // Handle any errors that occur during the fetch process
-    res.status(500).json({ message: "Error fetching bookings", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching bookings", error: error.message });
   }
 });
 
 /**
  * GET /api/bookings/:id
  * Get a specific booking by ID
- * 
+ *
  * This endpoint returns a single booking with populated data.
  * Access is restricted to the booking owner or the associated business owner.
- * 
+ *
  * @route GET /api/bookings/:id
  * @access Private
  */
+
+// Get booking by ID
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
     // Find the booking and populate related data
     const booking = await Booking.findById(req.params.id)
-      .populate('customerId', 'firstName lastName') // Get customer details
-      .populate('salonId', 'name') // Get salon details
-      .populate('serviceId', 'name price duration'); // Get service details
+      .populate("customerId", "firstName lastName") // Get customer details
+      .populate("salonId", "name") // Get salon details
+      .populate("serviceId", "name price duration"); // Get service details
 
     // Check if booking exists
     if (!booking) {
@@ -228,20 +247,25 @@ router.get("/:id", authMiddleware, async (req, res) => {
     res.json(booking);
   } catch (error) {
     // Handle any errors that occur during the fetch process
-    res.status(500).json({ message: "Error fetching booking", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching booking", error: error.message });
   }
 });
 
 /**
  * PATCH /api/bookings/:id
  * Update booking status
- * 
+ *
  * This endpoint allows updating the status of a booking.
  * Access is restricted to the booking owner or the associated business owner.
- * 
+ *
  * @route PATCH /api/bookings/:id
  * @access Private
  */
+
+// Route to update the status of a booking
+// Update booking status
 router.patch("/:id", authMiddleware, async (req, res) => {
   try {
     // Extract status from request body and get user info
@@ -270,25 +294,30 @@ router.patch("/:id", authMiddleware, async (req, res) => {
 
     // Populate the updated booking with related data
     const updatedBooking = await Booking.findById(bookingId)
-      .populate('customerId', 'firstName lastName') // Get customer details
-      .populate('salonId', 'name') // Get salon details
-      .populate('serviceId', 'name price duration'); // Get service details
+      .populate("customerId", "firstName lastName") // Get customer details
+      .populate("salonId", "name") // Get salon details
+      .populate("serviceId", "name price duration"); // Get service details
 
     // Return success response with populated booking data
-    res.json({ message: "Booking updated successfully", booking: updatedBooking });
+    res.json({
+      message: "Booking updated successfully",
+      booking: updatedBooking,
+    });
   } catch (error) {
     // Handle any errors that occur during the update process
-    res.status(500).json({ message: "Error updating booking", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error updating booking", error: error.message });
   }
 });
 
 /**
  * PATCH /api/bookings/:id/reschedule
  * Update booking date and time
- * 
+ *
  * This endpoint allows rescheduling a booking.
  * Access is restricted to the booking owner only.
- * 
+ *
  * @route PATCH /api/bookings/:id/reschedule
  * @access Private (Customer only)
  */
@@ -331,15 +360,20 @@ router.patch("/:id/reschedule", authMiddleware, async (req, res) => {
 
     // Populate the updated booking with related data
     const updatedBooking = await Booking.findById(bookingId)
-      .populate('customerId', 'firstName lastName') // Get customer details
-      .populate('salonId', 'name') // Get salon details
-      .populate('serviceId', 'name price duration'); // Get service details
+      .populate("customerId", "firstName lastName") // Get customer details
+      .populate("salonId", "name") // Get salon details
+      .populate("serviceId", "name price duration"); // Get service details
 
     // Return success response with populated booking data
-    res.json({ message: "Booking rescheduled successfully", booking: updatedBooking });
+    res.json({
+      message: "Booking rescheduled successfully",
+      booking: updatedBooking,
+    });
   } catch (error) {
     // Handle any errors that occur during the rescheduling process
-    res.status(500).json({ message: "Error rescheduling booking", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error rescheduling booking", error: error.message });
   }
 });
 

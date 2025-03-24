@@ -44,9 +44,13 @@ const salonSchema = new mongoose.Schema({
   services: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Service",
     },
   ],
+  languageSpoken: {
+    type: [String], // Array of strings to store languages
+    default: [], // Default to an empty array
+  },
   createdAt: {
     type: Date,
     default: Date.now,
