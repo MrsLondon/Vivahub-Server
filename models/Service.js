@@ -21,6 +21,10 @@ const serviceSchema = new mongoose.Schema({
     type: Number, // duration in minutes
     required: true,
   },
+  languageSpoken: {
+    type: [String], // Array of strings to store languages
+    default: [], // Default to an empty array
+  },
   salon: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Salon", // Reference to Salon model
