@@ -65,7 +65,7 @@ router.post("/", authMiddleware, async (req, res) => {
     const serviceConflicts = await Booking.find({
       serviceId,
       appointmentDate,
-      status: { $in: ["pending", "confirmed"] }, // Only check active bookings
+      //status: { $in: ["pending", "confirmed"] }, // Only check active bookings
     });
 
     // Check if the new booking time overlaps with any existing bookings
@@ -111,7 +111,7 @@ router.post("/", authMiddleware, async (req, res) => {
         }`
       );
       const bookingEnd = new Date(
-        bookingStart.getTime() + service.duration * 60000
+        bookingStart.getTime() + service.duration * 60000 // Calculate end time and convertin minutes to milliseconds
       );
 
       // Check for any overlap between the new booking and customer's existing bookings
@@ -374,6 +374,43 @@ router.patch("/:id/reschedule", authMiddleware, async (req, res) => {
     res
       .status(500)
       .json({ message: "Error rescheduling booking", error: error.message });
+  }
+});
+
+//DELETE /api/bookings/:id - Delete a booking (restricted to the customer owner and salon owner)
+router.delete("/:id", authMiddleware, async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const userId = req.user.userId;
+
+    // Find the booking by ID
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Check if the user is the customer who created the booking
+    const isCustomer = booking.customerId.toString() === userId;
+
+    // Check if the user is the owner of the salon associated with the booking
+    const salon = await Salon.findById(booking.salonId);
+    const isSalonOwner = salon && salon.owner.toString() === userId;
+
+    // If the user is neither the customer nor the salon owner, deny access
+    if (!isCustomer && !isSalonOwner) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    // Delete the booking
+    await Booking.findByIdAndDelete(bookingId);
+
+    // Return success response
+    res.json({ message: "Booking deleted successfully" });
+  } catch (error) {
+    // Handle any errors that occur during the deletion process
+    res
+      .status(500)
+      .json({ message: "Error deleting booking", error: error.message });
   }
 });
 
