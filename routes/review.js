@@ -28,13 +28,6 @@ router.post("/", authenticateUser, isCustomer, async (req, res, next) => {
       return res.status(404).json({ message: "Booking not found." });
     }
 
-    // Check if the booking is confirmed
-    if (booking.status !== "confirmed") {
-      return res.status(400).json({
-        message: "You can only review a completed booking.",
-      });
-    }
-
     // Check if the booking date and time have passed
     const now = new Date();
     const bookingDateTime = new Date(
@@ -68,9 +61,9 @@ router.post("/", authenticateUser, isCustomer, async (req, res, next) => {
 
     // Populate the created review with related data
     const populatedReview = await Review.findById(newReview._id)
-      .populate('customerId', 'firstName lastName')
-      .populate('salonId', 'name')
-      .populate('serviceId', 'name');
+      .populate("customerId", "firstName lastName")
+      .populate("salonId", "name")
+      .populate("serviceId", "name");
 
     res.status(201).json(populatedReview);
   } catch (error) {
@@ -83,9 +76,9 @@ router.post("/", authenticateUser, isCustomer, async (req, res, next) => {
 router.get("/", async (req, res, next) => {
   try {
     const reviews = await Review.find()
-      .populate('customerId', 'firstName lastName')
-      .populate('salonId', 'name')
-      .populate('serviceId', 'name')
+      .populate("customerId", "firstName lastName")
+      .populate("salonId", "name")
+      .populate("serviceId", "name")
       .sort({ createdAt: -1 });
     res.json(reviews);
   } catch (error) {
@@ -98,12 +91,14 @@ router.get("/", async (req, res, next) => {
 router.get("/salon/:salonId", async (req, res, next) => {
   try {
     const reviews = await Review.find({ salonId: req.params.salonId })
-      .populate('customerId', 'firstName lastName')
-      .populate('serviceId', 'name')
+      .populate("customerId", "firstName lastName")
+      .populate("serviceId", "name")
       .sort({ createdAt: -1 });
-    
+
     if (!reviews.length) {
-      return res.status(404).json({ message: "No reviews found for this salon." });
+      return res
+        .status(404)
+        .json({ message: "No reviews found for this salon." });
     }
 
     res.json(reviews);
@@ -117,12 +112,14 @@ router.get("/salon/:salonId", async (req, res, next) => {
 router.get("/service/:serviceId", async (req, res, next) => {
   try {
     const reviews = await Review.find({ serviceId: req.params.serviceId })
-      .populate('customerId', 'firstName lastName')
-      .populate('salonId', 'name')
+      .populate("customerId", "firstName lastName")
+      .populate("salonId", "name")
       .sort({ createdAt: -1 });
-    
+
     if (!reviews.length) {
-      return res.status(404).json({ message: "No reviews found for this service." });
+      return res
+        .status(404)
+        .json({ message: "No reviews found for this service." });
     }
 
     res.json(reviews);
@@ -136,9 +133,9 @@ router.get("/service/:serviceId", async (req, res, next) => {
 router.get("/:id", async (req, res, next) => {
   try {
     const review = await Review.findById(req.params.id)
-      .populate('customerId', 'firstName lastName')
-      .populate('salonId', 'name')
-      .populate('serviceId', 'name');
+      .populate("customerId", "firstName lastName")
+      .populate("salonId", "name")
+      .populate("serviceId", "name");
 
     if (!review) {
       return res.status(404).json({ message: "Review not found." });
@@ -156,6 +153,7 @@ router.put("/:id", authenticateUser, isCustomer, async (req, res, next) => {
   const { rating, comment } = req.body;
 
   try {
+    // Find the review by ID
     const review = await Review.findById(req.params.id);
 
     if (!review) {
@@ -169,19 +167,23 @@ router.put("/:id", authenticateUser, isCustomer, async (req, res, next) => {
       });
     }
 
-    // Update the review
-    if (rating) review.rating = rating;
-    if (comment) review.comment = comment;
+    // Update the review fields if provided
+    if (rating !== undefined) review.rating = rating;
+    if (comment !== undefined) review.comment = comment;
 
+    // Save the updated review
     await review.save();
 
     // Populate the updated review with related data
-    const updatedReview = await Review.findById(review._id)
-      .populate('customerId', 'firstName lastName')
-      .populate('salonId', 'name')
-      .populate('serviceId', 'name');
+    const populatedReview = await Review.findById(review._id)
+      .populate("customerId", "firstName lastName")
+      .populate("salonId", "name")
+      .populate("serviceId", "name");
 
-    res.json({ message: "Review updated successfully.", review: updatedReview });
+    res.json({
+      message: "Review updated successfully.",
+      review: populatedReview,
+    });
   } catch (error) {
     console.error("Error updating review:", error.message);
     next(error);
