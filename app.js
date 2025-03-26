@@ -15,18 +15,18 @@ const Service = require("./models/Service");
 
 // Import routes
 const authRoutes = require("./routes/auth");
-const salonRoutes = require("./routes/salon");
-const serviceRoutes = require("./routes/service");
+const salonRoutes = require("./routes/salon.routes");
+const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking");
-const reviewRoutes = require("./routes/review");
+const reviewRoutes = require("./routes/review.routes");
 const userRoutes = require("./routes/user");
 
 const app = express();
 
 // Handlebars setup
-app.engine('handlebars', exphbs.engine());
-app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views'));
+app.engine("handlebars", exphbs.engine());
+app.set("view engine", "handlebars");
+app.set("views", path.join(__dirname, "views"));
 
 // Middleware
 app.use(express.json());
@@ -51,14 +51,17 @@ const connectWithRetry = async () => {
       console.log("Connected to MongoDB");
       return true;
     } catch (err) {
-      console.error(`MongoDB connection attempt ${retries + 1} failed:`, err.message);
+      console.error(
+        `MongoDB connection attempt ${retries + 1} failed:`,
+        err.message
+      );
       retries++;
       if (retries === maxRetries) {
         console.error("Max retries reached. Could not connect to MongoDB");
         return false;
       }
       // Wait for 5 seconds before retrying
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
     }
   }
 };
@@ -76,7 +79,7 @@ app.get("/", async (req, res) => {
   try {
     // Check MongoDB connection
     if (mongoose.connection.readyState !== 1) {
-      throw new Error('MongoDB connection is not ready');
+      throw new Error("MongoDB connection is not ready");
     }
 
     const [salons, services, bookings, users, reviews] = await Promise.all([
@@ -84,24 +87,49 @@ app.get("/", async (req, res) => {
       Service.find().exec(),
       Booking.find().exec(),
       User.find().exec(),
-      Review.find().exec()
+      Review.find().exec(),
     ]);
 
     const endpoints = [
-      { name: 'Salons', path: '/api/salons', description: 'View all salons and their services', count: salons.length },
-      { name: 'Services', path: '/api/services', description: 'View all available services', count: services.length },
-      { name: 'Bookings', path: '/api/bookings', description: 'View all bookings with related data', count: bookings.length },
-      { name: 'Users', path: '/api/users', description: 'View all users (passwords excluded)', count: users.length },
-      { name: 'Reviews', path: '/api/reviews', description: 'View all reviews with user and salon details', count: reviews.length }
+      {
+        name: "Salons",
+        path: "/api/salons",
+        description: "View all salons and their services",
+        count: salons.length,
+      },
+      {
+        name: "Services",
+        path: "/api/services",
+        description: "View all available services",
+        count: services.length,
+      },
+      {
+        name: "Bookings",
+        path: "/api/bookings",
+        description: "View all bookings with related data",
+        count: bookings.length,
+      },
+      {
+        name: "Users",
+        path: "/api/users",
+        description: "View all users (passwords excluded)",
+        count: users.length,
+      },
+      {
+        name: "Reviews",
+        path: "/api/reviews",
+        description: "View all reviews with user and salon details",
+        count: reviews.length,
+      },
     ];
 
-    res.render('index', { endpoints });
+    res.render("index", { endpoints });
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ 
-      error: 'Internal Server Error',
+    console.error("Error:", error);
+    res.status(500).json({
+      error: "Internal Server Error",
       message: error.message,
-      mongoState: mongoose.connection.readyState 
+      mongoState: mongoose.connection.readyState,
     });
   }
 });
