@@ -52,6 +52,23 @@ exports.getSalonById = async (req, res, next) => {
   }
 };
 
+// Get salon by user (owner)
+exports.getSalonByUser = async (req, res, next) => {
+  try {
+    // Search the salon by the authenticated user
+    const salon = await Salon.findOne({ owner: req.user.userId });
+
+    if (!salon) {
+      return res.status(404).json({ message: "Salon not found" });
+    }
+
+    res.status(200).json(salon);
+  } catch (error) {
+    console.error("Error fetching salon by user:", error.message);
+    next(error);
+  }
+};
+
 // Update salon info (owner only)
 exports.updateSalon = async (req, res, next) => {
   const { id } = req.params;

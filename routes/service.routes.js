@@ -6,7 +6,8 @@ const {
   getServiceById,
   updateService,
   deleteService,
-  getSupportedLanguages, // Import the new controller function
+  getSupportedLanguages,
+  getServicesByUser,
 } = require("../controllers/service.controller");
 
 // Middleware to check if the user is a business owner
@@ -23,6 +24,7 @@ const isBusiness = (req, res, next) => {
 router.post("/", authenticateUser, isBusiness, addService);
 router.get("/", getAllServices);
 router.get("/languages", getSupportedLanguages);
+router.get("/user", authenticateUser, isBusiness, getServicesByUser);
 router.get("/:id", getServiceById);
 router.put("/:id", authenticateUser, isBusiness, updateService);
 router.delete("/:id", authenticateUser, isBusiness, deleteService);

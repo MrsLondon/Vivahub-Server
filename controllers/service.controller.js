@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Service = require("../models/Service");
 const Salon = require("../models/Salon");
 const languages = require("../utils/languages");
@@ -80,6 +81,42 @@ exports.getServiceById = async (req, res, next) => {
     res.json(service);
   } catch (error) {
     console.error("Error fetching service by ID:", error.message);
+    next(error);
+  }
+};
+
+// Get services associated with the authenticated user
+exports.getServicesByUser = async (req, res, next) => {
+  try {
+    console.log("User ID:", req.user.userId); // Log do ID do usuário
+
+    // Converte o ID do usuário para ObjectId, se necessário
+    const userId = new mongoose.Types.ObjectId(req.user.userId);
+
+    // Busca o salão associado ao usuário autenticado
+    const salon = await Salon.findOne({ owner: userId });
+    if (!salon) {
+      console.log("No salon found for this user.");
+      return res.status(404).json({ message: "No salon found for this user." });
+    }
+
+    console.log("Salon ID:", salon._id); // Log do ID do salão
+
+    // Busca os serviços associados ao salão
+    const services = await Service.find({ salon: salon._id });
+
+    if (!services.length) {
+      console.log("No services found for this user.");
+      return res
+        .status(404)
+        .json({ message: "No services found for this user." });
+    }
+
+    console.log("Services:", services); // Log dos serviços encontrados
+
+    res.status(200).json(services);
+  } catch (error) {
+    console.error("Error fetching services for user:", error.message);
     next(error);
   }
 };

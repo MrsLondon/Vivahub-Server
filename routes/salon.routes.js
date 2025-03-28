@@ -4,6 +4,7 @@ const {
   addSalon,
   getAllSalons,
   getSalonById,
+  getSalonByUser,
   updateSalon,
   deleteSalon,
 } = require("../controllers/salon.controller");
@@ -20,6 +21,7 @@ const isBusiness = (req, res, next) => {
 
 // Salon routes
 router.post("/", authenticateUser, isBusiness, addSalon);
+router.get("/user", authenticateUser, isBusiness, getSalonByUser);
 router.get("/", getAllSalons);
 router.get("/:id", getSalonById);
 router.put("/:id", authenticateUser, isBusiness, updateSalon);
