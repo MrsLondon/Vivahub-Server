@@ -17,9 +17,9 @@ const Service = require("./models/Service");
 const authRoutes = require("./routes/auth");
 const salonRoutes = require("./routes/salon.routes");
 const serviceRoutes = require("./routes/service.routes");
-const bookingRoutes = require("./routes/booking");
+const bookingRoutes = require("./routes/booking.routes");
 const reviewRoutes = require("./routes/review.routes");
-const userRoutes = require("./routes/user");
+const userRoutes = require("./routes/user.routes");
 
 const app = express();
 
