@@ -44,6 +44,7 @@ const {
   createBooking,
   getAllBookings,
   rescheduleBooking,
+  cancelBooking,
   // Import other controller functions here
 } = require("../controllers/booking.controller");
 

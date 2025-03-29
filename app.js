@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 const morgan = require("morgan");
 const path = require("path");
 const exphbs = require("express-handlebars");
+const cron = require("node-cron"); // Import cron for scheduling tasks
+const { updateCompletedBookings } = require("./controllers/booking.controller"); // Import the function to update completed bookings
 
 // Import your MongoDB models
 const Salon = require("./models/Salon");
@@ -20,6 +22,7 @@ const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const reviewRoutes = require("./routes/review.routes");
 const userRoutes = require("./routes/user.routes");
+const canceledBookingRoutes = require("./routes/canceledBooking.routes");
 
 const app = express();
 
@@ -73,6 +76,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/canceledBookings", canceledBookingRoutes);
 
 // Root route - Data Viewer
 app.get("/", async (req, res) => {
@@ -153,6 +157,12 @@ const startServer = async () => {
   if (connected) {
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
+
+      // Configure node-cron to run every minute
+      cron.schedule("* * * * *", () => {
+        console.log("Running scheduled task to update completed bookings...");
+        updateCompletedBookings();
+      });
     });
   } else {
     console.error("Could not start server due to MongoDB connection failure");

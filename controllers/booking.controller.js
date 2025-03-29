@@ -31,12 +31,23 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: "Invalid date or time format" });
     }
 
+    // Check if the appointment date is in the past
+    if (appointmentStart < new Date()) {
+      return res
+        .status(400)
+        .json({ message: "You cannot book an appointment in the past." });
+    }
+
     const serviceDuration = service.duration;
     const appointmentEnd = new Date(
       appointmentStart.getTime() + serviceDuration * 60000
     );
 
-    const serviceConflicts = await Booking.find({ serviceId, appointmentDate });
+    const serviceConflicts = await Booking.find({
+      serviceId,
+      appointmentDate,
+      bookingStatus: "Pending",
+    });
     const hasServiceConflict = serviceConflicts.some((booking) => {
       const bookingStart = new Date(
         `${booking.appointmentDate}T${booking.appointmentTime}`
@@ -60,7 +71,7 @@ const createBooking = async (req, res) => {
     const customerConflicts = await Booking.find({
       customerId,
       appointmentDate,
-      status: { $in: ["pending", "confirmed"] },
+      bookingStatus: "Pending",
     });
     const hasCustomerConflict = customerConflicts.some((booking) => {
       const bookingStart = new Date(
@@ -88,6 +99,7 @@ const createBooking = async (req, res) => {
       serviceId,
       appointmentDate,
       appointmentTime,
+      bookingStatus: "Pending",
     });
 
     await newBooking.save();
@@ -158,7 +170,7 @@ const rescheduleBooking = async (req, res) => {
       salonId: booking.salonId,
       appointmentDate,
       appointmentTime,
-      status: { $in: ["pending", "confirmed"] },
+      bookingStatus: "Pending",
     });
 
     if (existingBooking) {
@@ -171,6 +183,8 @@ const rescheduleBooking = async (req, res) => {
     const customerConflicts = await Booking.find({
       customerId: userId,
       appointmentDate,
+      appointmentTime,
+      bookingStatus: "Pending",
     });
 
     const hasConflict = customerConflicts.some((conflictBooking) => {
@@ -186,6 +200,13 @@ const rescheduleBooking = async (req, res) => {
         newStart.getTime() + booking.serviceId.duration * 60000
       );
 
+      // Check if the new booking time is in the past
+      if (newStart < new Date()) {
+        return res
+          .status(400)
+          .json({ message: "You cannot reschedule to a past date or time." });
+      }
+
       return (
         (newStart >= conflictStart && newStart < conflictEnd) || // New booking starts during another booking
         (newEnd > conflictStart && newEnd <= conflictEnd) || // New booking ends during another booking
@@ -194,11 +215,9 @@ const rescheduleBooking = async (req, res) => {
     });
 
     if (hasConflict) {
-      return res
-        .status(400)
-        .json({
-          message: "You already have a booking that conflicts with this time.",
-        });
+      return res.status(400).json({
+        message: "You already have a booking that conflicts with this time.",
+      });
     }
 
     // Update the booking with the new date and time
@@ -222,11 +241,69 @@ const rescheduleBooking = async (req, res) => {
   }
 };
 
+// Update booking status to "Service Completed" if the appointment date and time have passed
+const updateCompletedBookings = async () => {
+  try {
+    const now = new Date();
+
+    // Update bookings that are "Pending" and have passed the appointment date and time
+    const result = await Booking.updateMany(
+      {
+        bookingStatus: "Pending",
+        appointmentDate: { $lte: now.toISOString().split("T")[0] }, // Date already
+        appointmentTime: { $lte: now.toTimeString().split(" ")[0] }, // Time already passed
+      },
+      { $set: { bookingStatus: "Service Completed" } }
+    );
+
+    console.log(
+      `Updated ${result.modifiedCount} bookings to "Service Completed".`
+    );
+  } catch (error) {
+    console.error("Error updating completed bookings:", error.message);
+  }
+};
+
+// Cancel a booking
+const cancelBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Finding the booking by ID
+    const booking = await Booking.findById(id);
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // Create a new CanceledBooking document
+    const canceledBooking = new CanceledBooking({
+      customerId: booking.customerId,
+      salonId: booking.salonId,
+      serviceId: booking.serviceId,
+      appointmentDate: booking.appointmentDate,
+      appointmentTime: booking.appointmentTime,
+      bookingStatus: "Service Canceled",
+      paymentStatus: booking.paymentStatus,
+    });
+    await canceledBooking.save();
+
+    // Remove the booking from the booking collection
+    await Booking.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Booking canceled successfully." });
+  } catch (error) {
+    console.error("Error canceling booking:", error.message);
+    res.status(500).json({ message: "Failed to cancel booking." });
+  }
+};
+
 // Other controller functions (getBookingById, updateBookingStatus, rescheduleBooking, deleteBooking) would follow a similar pattern.
 
 module.exports = {
   createBooking,
   getAllBookings,
   rescheduleBooking,
+  updateCompletedBookings,
+
   // Add other controller functions here
 };
