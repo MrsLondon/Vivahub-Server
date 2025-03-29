@@ -12,19 +12,19 @@ const authMiddleware = require("../middlewares/authMiddleware");
  * 3. Ensures the service exists
  * 4. Validates date and time format
  * 5. Returns populated booking data
- * 
+ *
  * GET /api/bookings
  * Get all bookings with optional role-based filtering
  * This endpoint returns bookings based on the user's role:
  * - Customers see only their own bookings
  * - Business owners see bookings for their salon
- * 
+ *
  *  * GET /api/bookings/:id
  * Get a specific booking by ID
  *
  * This endpoint returns a single booking with populated data.
  * Access is restricted to the booking owner or the associated business owner.
- * 
+ *
  *  * PATCH /api/bookings/:id
  * Update booking status
  *
@@ -40,10 +40,10 @@ const authMiddleware = require("../middlewares/authMiddleware");
  * @access Private (Customer only)
  */
 
-
 const {
   createBooking,
   getAllBookings,
+  rescheduleBooking,
   // Import other controller functions here
 } = require("../controllers/booking.controller");
 
@@ -52,6 +52,9 @@ router.post("/", authMiddleware, createBooking);
 
 // Get all bookings
 router.get("/", authMiddleware, getAllBookings);
+
+// Reschedule a booking
+router.patch("/reschedule/:id", authMiddleware, rescheduleBooking);
 
 // Define other routes here (e.g., GET /:id, PATCH /:id, DELETE /:id)
 
