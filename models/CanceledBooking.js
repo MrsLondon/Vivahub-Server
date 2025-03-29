@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const bookingSchema = new mongoose.Schema({
+const canceledBookingSchema = new mongoose.Schema({
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -26,8 +26,7 @@ const bookingSchema = new mongoose.Schema({
   },
   bookingStatus: {
     type: String,
-    enum: ["Pending", "Service Canceled", "Service Completed"],
-    default: "Pending",
+    default: "Service Canceled",
   },
   paymentStatus: {
     type: String,
@@ -44,4 +43,4 @@ const bookingSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Booking", bookingSchema);
+module.exports = mongoose.model("CanceledBooking", canceledBookingSchema);
