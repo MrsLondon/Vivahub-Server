@@ -8,7 +8,6 @@ const {
   deleteService,
   getSupportedLanguages,
   getServicesByUser,
-  searchServices,
 } = require("../controllers/service.controller");
 
 // Middleware to check if the user is a business owner
@@ -22,9 +21,6 @@ const isBusiness = (req, res, next) => {
 };
 
 // Service routes
-// Search services - Public route, no authentication required
-router.get("/search", searchServices);
-
 // Create new service - Protected route, business only
 router.post("/", authenticateUser, isBusiness, addService);
 

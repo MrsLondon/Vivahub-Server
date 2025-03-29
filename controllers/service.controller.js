@@ -61,10 +61,25 @@ exports.getSupportedLanguages = (req, res) => {
 exports.getAllServices = async (req, res, next) => {
   try {
     const services = await Service.find().populate("salon");
-    res.json(services);
+    
+    if (!services || services.length === 0) {
+      return res.status(404).json({ 
+        status: 'error',
+        message: "No services found" 
+      });
+    }
+    
+    res.status(200).json({
+      status: 'success',
+      data: services
+    });
   } catch (error) {
     console.error("Error fetching services:", error.message);
-    next(error);
+    res.status(500).json({ 
+      status: 'error',
+      message: "Failed to fetch services",
+      error: error.message 
+    });
   }
 };
 
@@ -121,46 +136,7 @@ exports.getServicesByUser = async (req, res, next) => {
   }
 };
 
-/**
- * Search for services based on a query string
- * This endpoint allows users to search for services by name or description
- * The search is case-insensitive and matches partial words
- * 
- * @route GET /api/services/search
- * @param {string} query - The search term to look for in service names and descriptions
- * @returns {Array} Array of services matching the search criteria
- * @throws {Error} If there's an error during the search process
- */
-exports.searchServices = async (req, res, next) => {
-  try {
-    // Extract search query from request parameters
-    const { query } = req.query;
-
-    // Validate that search query is provided
-    if (!query) {
-      return res.status(400).json({ message: "Search query is required" });
-    }
-
-    // Create case-insensitive regular expression for searching
-    const searchRegex = new RegExp(query, 'i');
-
-    // Search for services where name OR description matches the search term
-    const services = await Service.find({
-      $or: [
-        { name: searchRegex },      // Match service names
-        { description: searchRegex } // Match service descriptions
-      ]
-    }).populate('salon'); // Include salon details in the results
-
-    // Return the matched services
-    res.json(services);
-  } catch (error) {
-    console.error("Error searching services:", error.message);
-    next(error);
-  }
-};
-
-// Update a service
+// Update service
 exports.updateService = async (req, res, next) => {
   const { id } = req.params;
   const { name, description, price, duration, languageSpoken } = req.body;
@@ -197,7 +173,7 @@ exports.updateService = async (req, res, next) => {
   }
 };
 
-// Delete a service
+// Delete service
 exports.deleteService = async (req, res, next) => {
   try {
     const { id } = req.params;
