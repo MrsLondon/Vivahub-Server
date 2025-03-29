@@ -3,6 +3,7 @@ const languages = [
   { code: "es", name: "Spanish", country: "es" }, // Default to Spain for Spanish
   { code: "fr", name: "French", country: "fr" }, // Default to France for French
   { code: "pt", name: "Portuguese", country: "br" }, // Default to Brazil for Portuguese
+  { code: "pt", name: "Portuguese", country: "pt" }, // Portugal for Portuguese
   { code: "de", name: "German", country: "de" },
   { code: "it", name: "Italian", country: "it" },
   { code: "zh", name: "Chinese", country: "cn" },
