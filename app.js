@@ -6,20 +6,14 @@ const morgan = require("morgan");
 const path = require("path");
 const exphbs = require("express-handlebars");
 
-// Import your MongoDB models
-const Salon = require("./models/Salon");
-const Booking = require("./models/Booking");
-const User = require("./models/User");
-const Review = require("./models/Review");
-const Service = require("./models/Service");
-
 // Import routes
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/auth.routes");
 const salonRoutes = require("./routes/salon.routes");
 const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const reviewRoutes = require("./routes/review.routes");
 const userRoutes = require("./routes/user.routes");
+searchbarconst searchRoutes = require("./routes/search.routes");
 
 const app = express();
 
@@ -73,6 +67,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/search", searchRoutes);
 
 // Root route - Data Viewer
 app.get("/", async (req, res) => {
@@ -81,6 +76,13 @@ app.get("/", async (req, res) => {
     if (mongoose.connection.readyState !== 1) {
       throw new Error("MongoDB connection is not ready");
     }
+
+    // Import models only where needed
+    const Salon = require("./models/Salon");
+    const Service = require("./models/Service");
+    const Booking = require("./models/Booking");
+    const User = require("./models/User");
+    const Review = require("./models/Review");
 
     const [salons, services, bookings, users, reviews] = await Promise.all([
       Salon.find().exec(),
@@ -91,6 +93,12 @@ app.get("/", async (req, res) => {
     ]);
 
     const endpoints = [
+      {
+        name: "Search",
+        path: "/api/search",
+        description: "Advanced search with filters for services",
+        example: "/api/search?query=haircut&minPrice=20&maxPrice=100&language=english"
+      },
       {
         name: "Salons",
         path: "/api/salons",
@@ -145,7 +153,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something broke!", message: err.message });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5001;  // Changed default port to 5001
 
 // Start server only after MongoDB connects
 const startServer = async () => {
