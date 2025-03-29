@@ -13,7 +13,7 @@ const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const reviewRoutes = require("./routes/review.routes");
 const userRoutes = require("./routes/user.routes");
-const searchRoutes = require("./routes/search.routes");
+searchbarconst searchRoutes = require("./routes/search.routes");
 
 const app = express();
 
