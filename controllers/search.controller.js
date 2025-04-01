@@ -1,9 +1,32 @@
+/**
+ * Search Controller
+ * Handles all search-related functionality including:
+ * - Service search with language filtering
+ * - Salon search with language filtering
+ * - Combined search results with proper error handling
+ */
+
 const Service = require("../models/Service");
 const Salon = require("../models/Salon");
 
 /**
  * Advanced search endpoint that supports multiple filters
  * @route GET /api/search
+ * @param {Object} req - Express request object
+ * @param {Object} req.query - Query parameters
+ * @param {string} req.query.query - General text search
+ * @param {string} req.query.filterType - Type of filter: 'service', 'salon', 'language'
+ * @param {number} req.query.minPrice - Minimum price filter
+ * @param {number} req.query.maxPrice - Maximum price filter
+ * @param {number} req.query.duration - Duration filter
+ * @param {string} req.query.language - Language filter
+ * @param {string} req.query.salonId - Specific salon filter
+ * @param {string} req.query.serviceType - Type of service filter
+ * @param {string} req.query.sortBy - Sort by field
+ * @param {string} req.query.sortOrder - Sort order: 'asc' or 'desc'
+ * @param {number} req.query.page - Page number
+ * @param {number} req.query.limit - Number of results per page
+ * @param {Object} res - Express response object
  */
 exports.search = async (req, res, next) => {
   try {
@@ -27,42 +50,53 @@ exports.search = async (req, res, next) => {
     
     // Apply filters based on filterType
     if (filterType === 'service' && query) {
+      // Create a case-insensitive regular expression for searching
       const searchRegex = new RegExp(query, 'i');
+      // Search for services by name or description
       filter.$or = [
         { name: searchRegex },
         { description: searchRegex }
       ];
+      // Filter by service type if specified
       if (serviceType) {
         filter.type = serviceType;
       }
     } else if (filterType === 'salon' && query) {
       // Find salons first, then filter services
       const salonRegex = new RegExp(query, 'i');
+      // Search for salons by name
       const salons = await Salon.find({ name: salonRegex });
+      // Filter services by salon
       filter.salon = { $in: salons.map(salon => salon._id) };
     } else if (filterType === 'language' && language) {
+      // Filter services by language
       filter.languageSpoken = language;
     }
 
     // Price range filter
     if (minPrice !== undefined || maxPrice !== undefined) {
       filter.price = {};
+      // Set minimum price filter
       if (minPrice !== undefined) filter.price.$gte = Number(minPrice);
+      // Set maximum price filter
       if (maxPrice !== undefined) filter.price.$lte = Number(maxPrice);
     }
 
     // Duration filter
     if (duration) {
+      // Filter services by duration
       filter.duration = Number(duration);
     }
 
     // Specific salon filter
     if (salonId) {
+      // Filter services by salon
       filter.salon = salonId;
     }
 
     // Build sort object
     const sort = {};
+    // Sort by specified field
     if (sortBy) {
       sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
     }
@@ -80,7 +114,9 @@ exports.search = async (req, res, next) => {
     // Get total count for pagination
     const total = await Service.countDocuments(filter);
 
+    // Check if services were found
     if (!services || services.length === 0) {
+      // Return success response with empty data
       return res.status(200).json({
         status: 'success',
         message: 'No services found',
@@ -94,6 +130,7 @@ exports.search = async (req, res, next) => {
       });
     }
 
+    // Return success response with data
     res.status(200).json({
       status: 'success',
       data: services,
@@ -106,6 +143,7 @@ exports.search = async (req, res, next) => {
     });
 
   } catch (error) {
+    // Log error and return error response
     console.error("Search error:", error.message);
     res.status(500).json({
       status: 'error',

@@ -18,7 +18,7 @@ const userRoutes = require("./routes/user.routes");
 
 const canceledBookingRoutes = require("./routes/canceledBooking.routes");
 
-const searchRoutes = require("./routes/search.routes");
+const searchRoutes = require("./routes/search.routes");  // Search functionality routes including language-based filtering
 
 const app = express();
 
