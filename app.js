@@ -15,11 +15,8 @@ const serviceRoutes = require("./routes/service.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const reviewRoutes = require("./routes/review.routes");
 const userRoutes = require("./routes/user.routes");
-
 const canceledBookingRoutes = require("./routes/canceledBooking.routes");
-
-searchbarconst searchRoutes = require("./routes/search.routes");
-
+const searchRoutes = require("./routes/search.routes");  // Search functionality routes
 
 const app = express();
 
@@ -76,8 +73,8 @@ app.use("/api/users", userRoutes);
 
 app.use("/api/canceledBookings", canceledBookingRoutes);
 
+// Search routes - Handles all search functionality including language-based filtering
 app.use("/api/search", searchRoutes);
-
 
 // Root route - Data Viewer
 app.get("/", async (req, res) => {
