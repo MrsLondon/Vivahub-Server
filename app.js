@@ -18,8 +18,7 @@ const userRoutes = require("./routes/user.routes");
 
 const canceledBookingRoutes = require("./routes/canceledBooking.routes");
 
-searchbarconst searchRoutes = require("./routes/search.routes");
-
+const searchRoutes = require("./routes/search.routes");
 
 const app = express();
 
@@ -77,7 +76,6 @@ app.use("/api/users", userRoutes);
 app.use("/api/canceledBookings", canceledBookingRoutes);
 
 app.use("/api/search", searchRoutes);
-
 
 // Root route - Data Viewer
 app.get("/", async (req, res) => {
