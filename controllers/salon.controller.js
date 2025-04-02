@@ -2,14 +2,55 @@ const Salon = require("../models/Salon");
 
 // Add a new salon (business only)
 exports.addSalon = async (req, res, next) => {
-  const { name, location, email, openingHours, phone } = req.body;
+  console.log("Request body:", req.body);
+  const { name, location, email, openingHours, phone, closedDays } = req.body;
 
   try {
+    // Validate openingHours
+    if (openingHours) {
+      const daysOfWeek = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ];
+
+      for (const day of daysOfWeek) {
+        if (openingHours[day]) {
+          const { open, close } = openingHours[day];
+          if (
+            (open && !/^\d{2}:\d{2}$/.test(open)) || // Verify HH:mm format
+            (close && !/^\d{2}:\d{2}$/.test(close))
+          ) {
+            return res.status(400).json({
+              message: `Invalid time format for ${day}. Use HH:mm.`,
+            });
+          }
+        }
+      }
+    }
+
+    // Validate closedDays
+    // closedDays is an array of strings in "YYYY-MM-DD" format
+    if (closedDays) {
+      for (const date of closedDays) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          return res.status(400).json({
+            message: `Invalid date format in closedDays. Use YYYY-MM-DD.`,
+          });
+        }
+      }
+    }
+
     const newSalon = await Salon.create({
       name,
       location,
       email,
       openingHours,
+      closedDays,
       phone,
       owner: req.user.userId,
     });
@@ -72,7 +113,7 @@ exports.getSalonByUser = async (req, res, next) => {
 // Update salon info (owner only)
 exports.updateSalon = async (req, res, next) => {
   const { id } = req.params;
-  const { name, location, email, openingHours, phone } = req.body;
+  const { name, location, email, openingHours, phone, closedDays } = req.body;
 
   try {
     const salon = await Salon.findById(id);
@@ -85,6 +126,46 @@ exports.updateSalon = async (req, res, next) => {
       return res.status(403).json({
         message: "Access denied. You are not the owner of this salon.",
       });
+    }
+
+    // Validate openingHours
+    if (openingHours) {
+      const daysOfWeek = [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+      ];
+
+      for (const day of daysOfWeek) {
+        if (openingHours[day]) {
+          const { open, close } = openingHours[day];
+          if (
+            (open && !/^\d{2}:\d{2}$/.test(open)) || // Verify HH:mm format
+            (close && !/^\d{2}:\d{2}$/.test(close))
+          ) {
+            return res.status(400).json({
+              message: `Invalid time format for ${day}: ${
+                open || close
+              }. Use HH:mm.`,
+            });
+          }
+        }
+      }
+    }
+
+    // Validate closedDays
+    if (closedDays) {
+      for (const date of closedDays) {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          return res.status(400).json({
+            message: `Invalid date format in closedDays: ${date}. Use YYYY-MM-DD.`,
+          });
+        }
+      }
     }
 
     if (name) salon.name = name;

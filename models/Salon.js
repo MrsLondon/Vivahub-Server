@@ -25,7 +25,10 @@ const salonSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
-    match: [/^\+?[1-9]\d{1,14}$/, "Please enter a valid phone number"],
+    match: [
+      /^\+?[1-9]\d{1,14}$/,
+      "Please enter a valid phone number. It should start with a '+' followed by the country code and contain up to 15 digits (e.g., +1234567890).",
+    ],
   },
   email: {
     type: String,
@@ -38,8 +41,39 @@ const salonSchema = new mongoose.Schema({
     trim: true,
   },
   openingHours: {
-    type: Object, // store opening hours as an object
-    required: true,
+    monday: {
+      open: { type: String, default: null },
+      close: { type: String, default: null },
+    },
+    tuesday: {
+      open: { type: String, default: null },
+      close: { type: String, default: null },
+    },
+    wednesday: {
+      open: { type: String, default: null },
+      close: { type: String, default: null },
+    },
+    thursday: {
+      open: { type: String, default: null },
+      close: { type: String, default: null },
+    },
+    friday: {
+      open: { type: String, default: null },
+      close: { type: String, default: null },
+    },
+    saturday: {
+      open: { type: String, default: null },
+      close: { type: String, default: null },
+    },
+    sunday: {
+      open: { type: String, default: null },
+      close: { type: String, default: null },
+    },
+  },
+  // When to Use closedDays: Holidays: Closure on holidays such as Christmas, New Year, etc, Special Events: Closure for renovations, training, or other events, Specific Dates: Any date when the salon will not be operating, even if it would normally be open on that day of the week.
+  closedDays: {
+    type: [String], // Dates array with "YYYY-MM-DD" format
+    default: [],
   },
   services: [
     {

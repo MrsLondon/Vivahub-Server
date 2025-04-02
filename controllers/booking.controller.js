@@ -31,6 +31,50 @@ const createBooking = async (req, res) => {
       return res.status(400).json({ message: "Invalid date or time format" });
     }
 
+    // Verifify if the appointment date is a closed day
+    if (salon.closedDays.includes(appointmentDate)) {
+      return res.status(400).json({
+        message: `The salon is closed on the selected date. The salon operates on the following days and hours: ${Object.entries(
+          salon.openingHours
+        )
+          .map(
+            ([day, hours]) =>
+              `${day}: ${hours.open || "Closed"} - ${hours.close || "Closed"}`
+          )
+          .join(", ")}.`,
+      });
+    }
+
+    // Verify if the appointment time is within the salon's opening hours
+    const dayOfWeek = appointmentStart
+      .toLocaleString("en-US", {
+        weekday: "long",
+      })
+      .toLowerCase(); // Exemple: "monday"
+    const openingHours = salon.openingHours[dayOfWeek];
+
+    if (!openingHours || !openingHours.open || !openingHours.close) {
+      return res.status(400).json({
+        message: `The salon does not have defined opening hours for the selected day. The salon operates on the following days and hours: ${Object.entries(
+          salon.openingHours
+        )
+          .map(
+            ([day, hours]) =>
+              `${day}: ${hours.open || "Closed"} - ${hours.close || "Closed"}`
+          )
+          .join(", ")}.`,
+      });
+    }
+
+    const openingTime = new Date(`${appointmentDate}T${openingHours.open}`);
+    const closingTime = new Date(`${appointmentDate}T${openingHours.close}`);
+
+    if (appointmentStart < openingTime || appointmentStart >= closingTime) {
+      return res.status(400).json({
+        message: `The salon is only open from ${openingHours.open} to ${openingHours.close} on ${dayOfWeek}.`,
+      });
+    }
+
     // Check if the appointment date is in the past
     if (appointmentStart < new Date()) {
       return res
@@ -48,6 +92,8 @@ const createBooking = async (req, res) => {
       appointmentDate,
       bookingStatus: "Pending",
     });
+
+    // Check for conflicts with other bookings for the same service
     const hasServiceConflict = serviceConflicts.some((booking) => {
       const bookingStart = new Date(
         `${booking.appointmentDate}T${booking.appointmentTime}`
@@ -68,6 +114,7 @@ const createBooking = async (req, res) => {
       });
     }
 
+    // Check for conflicts with the customer's other bookings
     const customerConflicts = await Booking.find({
       customerId,
       appointmentDate,
@@ -217,6 +264,58 @@ const rescheduleBooking = async (req, res) => {
     if (hasConflict) {
       return res.status(400).json({
         message: "You already have a booking that conflicts with this time.",
+      });
+    }
+
+    // Verify if the salon is closed on the selected date
+    const salon = await Salon.findById(booking.salonId);
+    if (!salon) {
+      return res
+        .status(404)
+        .json({ message: "Salon associated with this booking not found" });
+    }
+
+    if (salon.closedDays.includes(appointmentDate)) {
+      return res.status(400).json({
+        message: `The salon is closed on the selected date. The salon operates on the following days and hours: ${Object.entries(
+          salon.openingHours
+        )
+          .map(
+            ([day, hours]) =>
+              `${day}: ${hours.open || "Closed"} - ${hours.close || "Closed"}`
+          )
+          .join(", ")}.`,
+      });
+    }
+
+    // Verify if the appointment time is within the salon's opening hours
+    const dayOfWeek = new Date(appointmentDate)
+      .toLocaleString("en-US", { weekday: "long" })
+      .toLowerCase(); // Exemple: "monday"
+    const openingHours = salon.openingHours[dayOfWeek];
+
+    if (!openingHours || !openingHours.open || !openingHours.close) {
+      return res.status(400).json({
+        message: `The salon does not have defined opening hours for the selected day. The salon operates on the following days and hours: ${Object.entries(
+          salon.openingHours
+        )
+          .map(
+            ([day, hours]) =>
+              `${day}: ${hours.open || "Closed"} - ${hours.close || "Closed"}`
+          )
+          .join(", ")}.`,
+      });
+    }
+
+    const openingTime = new Date(`${appointmentDate}T${openingHours.open}`);
+    const closingTime = new Date(`${appointmentDate}T${openingHours.close}`);
+
+    if (
+      new Date(`${appointmentDate}T${appointmentTime}`) < openingTime ||
+      new Date(`${appointmentDate}T${appointmentTime}`) >= closingTime
+    ) {
+      return res.status(400).json({
+        message: `The salon is only open from ${openingHours.open} to ${openingHours.close} on ${dayOfWeek}.`,
       });
     }
 
