@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const Salon = require("../models/Salon");
 
 // Register new user
 router.post("/register", async (req, res) => {
@@ -26,6 +27,29 @@ router.post("/register", async (req, res) => {
     });
 
     await user.save();
+
+    // If the user is a business, create a salon
+    if (role === "business" && businessDetails) {
+      const newSalon = new Salon({
+        name: businessDetails.businessName,
+        location: businessDetails.address,
+        owner: user._id, // Relaciona o salão ao usuário
+        email: email,
+        phone: businessDetails.phone || "",
+        openingHours: {
+          monday: { open: null, close: null },
+          tuesday: { open: null, close: null },
+          wednesday: { open: null, close: null },
+          thursday: { open: null, close: null },
+          friday: { open: null, close: null },
+          saturday: { open: null, close: null },
+          sunday: { open: null, close: null },
+        },
+        closedDays: [],
+      });
+
+      await newSalon.save();
+    }
 
     // Generate JWT token
     const token = jwt.sign(
