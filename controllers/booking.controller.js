@@ -396,13 +396,49 @@ const cancelBooking = async (req, res) => {
   }
 };
 
+/**
+ * Get all bookings without authentication - FOR TESTING/VIEWING ONLY
+ * 
+ * Purpose:
+ * - Provides a way to view booking data in the view engine (handlebars)
+ * - Used for testing and development purposes
+ * - NOT meant for production use with sensitive data
+ * 
+ * Security Measures:
+ * 1. Excludes sensitive information:
+ *    - No customer IDs
+ *    - No internal metadata (__v)
+ * 2. Only returns essential booking information:
+ *    - Service details (name, price, duration)
+ *    - Salon details (name, location)
+ *    - Booking status and dates
+ * 
+ * @route GET /api/bookings/public
+ * @returns {Array} List of bookings with sensitive data removed
+ * @warning This route should be properly secured or disabled in production
+ */
+const getPublicBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find()
+      .populate('serviceId', 'name price duration') // Match model field name
+      .populate('salonId', 'name location')        // Match model field name
+      .select('-__v -customerId')                  // Exclude sensitive data
+      .lean(); // Convert to plain JavaScript object for better performance
+
+    res.json(bookings);
+  } catch (error) {
+    console.error('Error fetching public bookings:', error);
+    res.status(500).json({ message: 'Error fetching bookings' });
+  }
+};
+
 // Other controller functions (getBookingById, updateBookingStatus, rescheduleBooking, deleteBooking) would follow a similar pattern.
 
 module.exports = {
   createBooking,
   getAllBookings,
   rescheduleBooking,
+  cancelBooking,
   updateCompletedBookings,
-
-  // Add other controller functions here
+  getPublicBookings,
 };
