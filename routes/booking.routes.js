@@ -3,41 +3,30 @@ const router = express.Router();
 const authMiddleware = require("../middlewares/authMiddleware");
 
 /**
- * POST /api/bookings
- * Create a new booking for a service
- *
- * This endpoint handles the creation of a new booking with the following features:
- * 1. Validates required fields
- * 2. Checks for time slot conflicts with other bookings
- * 3. Ensures the service exists
- * 4. Validates date and time format
- * 5. Returns populated booking data
- *
- * GET /api/bookings
- * Get all bookings with optional role-based filtering
- * This endpoint returns bookings based on the user's role:
- * - Customers see only their own bookings
- * - Business owners see bookings for their salon
- *
- *  * GET /api/bookings/:id
- * Get a specific booking by ID
- *
- * This endpoint returns a single booking with populated data.
- * Access is restricted to the booking owner or the associated business owner.
- *
- *  * PATCH /api/bookings/:id
- * Update booking status
- *
- * This endpoint allows updating the status of a booking.
- * Access is restricted to the booking owner or the associated business owner.
- *
- *  * PATCH /api/bookings/:id/reschedule
- * Update booking date and time
- *
- * This endpoint allows rescheduling a booking.
- * Access is restricted to the booking owner only.
- * @route POST /api/bookings
- * @access Private (Customer only)
+ * Booking Routes Documentation
+ * 
+ * This file contains two types of routes:
+ * 1. Protected Routes (Require Authentication):
+ *    - These routes are used for actual business logic and data manipulation
+ *    - They require valid JWT tokens
+ *    - They maintain security for user-specific operations
+ * 
+ * 2. Public Routes (No Authentication):
+ *    - These routes are specifically for viewing/testing purposes
+ *    - They don't require authentication
+ *    - They exclude sensitive information
+ *    - They are primarily used for the view engine (handlebars) to display data
+ *    - NOT meant for production use with sensitive data
+ * 
+ * Route Structure:
+ * Protected Routes:
+ * - POST /api/bookings (Create booking) - Requires customer authentication
+ * - GET /api/bookings (Get user's bookings) - Shows bookings based on user role
+ * - PATCH /api/bookings/:id (Update status) - Requires booking owner/business owner
+ * - PATCH /api/bookings/:id/reschedule - Requires booking owner
+ * 
+ * Public Route (View/Testing Only):
+ * - GET /api/bookings/public - No auth required, shows limited booking data
  */
 
 const {
@@ -45,18 +34,34 @@ const {
   getAllBookings,
   rescheduleBooking,
   cancelBooking,
-  // Import other controller functions here
+  getPublicBookings,
 } = require("../controllers/booking.controller");
 
-// Create a new booking
+// ============ PUBLIC ROUTES (For View/Testing Only) ============
+/**
+ * Public route to view all bookings - NO AUTHENTICATION
+ * Purpose: Used by view engine to display booking data for testing
+ * Security: Excludes sensitive information like customer IDs
+ * Warning: This route should be disabled or properly secured in production
+ */
+router.get("/public", getPublicBookings);
+
+// ============ PROTECTED ROUTES (Require Authentication) ============
+/**
+ * Protected routes - require valid JWT token
+ * These routes handle actual business logic and maintain security
+ */
+
+// Create new booking - Customer only
 router.post("/", authMiddleware, createBooking);
 
-// Get all bookings
+// Get all bookings - Role-based access
 router.get("/", authMiddleware, getAllBookings);
 
-// Reschedule a booking
-router.patch("/reschedule/:id", authMiddleware, rescheduleBooking);
+// Reschedule booking - Booking owner only
+router.patch("/:id/reschedule", authMiddleware, rescheduleBooking);
 
-// Define other routes here (e.g., GET /:id, PATCH /:id, DELETE /:id)
+// Cancel booking - Booking owner or business owner
+router.delete("/:id", authMiddleware, cancelBooking);
 
 module.exports = router;

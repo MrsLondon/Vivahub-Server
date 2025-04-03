@@ -14,6 +14,13 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "Email is already registered." });
     }
 
+        // Generate JWT token
+        const token = jwt.sign(
+          { userId: user._id, role: user.role },
+          process.env.JWT_SECRET || "your-secret-key",
+          { expiresIn: "24h" }
+        );
+    
     // Create a new user
     const newUser = new User({
       email,

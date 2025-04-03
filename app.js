@@ -91,61 +91,62 @@ app.get("/", async (req, res) => {
     const Booking = require("./models/Booking");
     const User = require("./models/User");
     const Review = require("./models/Review");
+    const CanceledBooking = require("./models/CanceledBooking");
 
-    const [salons, services, bookings, users, reviews] = await Promise.all([
+    const [salons, services, bookings, users, reviews, canceledBookings] = await Promise.all([
       Salon.find().exec(),
       Service.find().exec(),
       Booking.find().exec(),
       User.find().exec(),
       Review.find().exec(),
+      CanceledBooking.find().exec(),
     ]);
 
     const endpoints = [
       {
-        name: "Search",
-        path: "/api/search",
-        description: "Advanced search with filters for services",
-        example: "/api/search?query=haircut&minPrice=20&maxPrice=100&language=english"
-      },
-      {
         name: "Salons",
         path: "/api/salons",
-        description: "View all salons and their services",
         count: salons.length,
+        description: "View all registered salons",
       },
       {
         name: "Services",
         path: "/api/services",
-        description: "View all available services",
         count: services.length,
+        description: "Browse available services",
       },
       {
         name: "Bookings",
-        path: "/api/bookings",
-        description: "View all bookings with related data",
+        path: "/api/bookings/public", 
         count: bookings.length,
+        description: "Check all bookings",
       },
       {
         name: "Users",
         path: "/api/users",
-        description: "View all users (passwords excluded)",
         count: users.length,
+        description: "View registered users",
       },
       {
         name: "Reviews",
         path: "/api/reviews",
-        description: "View all reviews with user and salon details",
         count: reviews.length,
+        description: "See customer reviews",
+      },
+      {
+        name: "Canceled Bookings",
+        path: "/api/canceledBookings/public", 
+        count: canceledBookings.length,
+        description: "View canceled bookings (Testing View)",
       },
     ];
 
     res.render("index", { endpoints });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({
-      error: "Internal Server Error",
-      message: error.message,
-      mongoState: mongoose.connection.readyState,
+    console.error("Error in root route:", error);
+    res.status(500).render("error", {
+      message: "Error loading data",
+      error: { status: 500, stack: error.stack },
     });
   }
 });

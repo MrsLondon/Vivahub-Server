@@ -48,4 +48,43 @@ const getCanceledBookings = async (req, res) => {
   }
 };
 
-module.exports = { cancelBooking, getCanceledBookings };
+/**
+ * Get all canceled bookings without authentication - FOR TESTING/VIEWING ONLY
+ * 
+ * Purpose:
+ * - Provides a way to view canceled booking data in the view engine (handlebars)
+ * - Used for testing and development purposes
+ * - NOT meant for production use with sensitive data
+ * 
+ * Security Measures:
+ * 1. Excludes sensitive information:
+ *    - No customer IDs
+ *    - No internal metadata (__v)
+ * 2. Only returns essential booking information:
+ *    - Service details (name, price, duration)
+ *    - Salon details (name, location)
+ *    - Cancellation status and dates
+ * 
+ * @route GET /api/canceledBookings/public
+ * @returns {Array} List of canceled bookings with sensitive data removed
+ * @warning This route should be properly secured or disabled in production
+ */
+const getPublicCanceledBookings = async (req, res) => {
+  try {
+    const canceledBookings = await CanceledBooking.find()
+      .populate("salonId", "name location")        // Only essential salon info
+      .populate("serviceId", "name price duration") // Only essential service info
+      .select('-__v -customerId');                // Exclude sensitive data
+
+    res.status(200).json(canceledBookings);
+  } catch (error) {
+    console.error("Error fetching public canceled bookings:", error.message);
+    res.status(500).json({ message: "Failed to fetch canceled bookings." });
+  }
+};
+
+module.exports = { 
+  cancelBooking, 
+  getCanceledBookings,
+  getPublicCanceledBookings 
+};
