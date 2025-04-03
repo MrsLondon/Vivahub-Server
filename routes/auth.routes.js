@@ -33,7 +33,26 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-   
+    // Verify if the user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify if the password is correct
+    const isPasswordValid = await user.comparePassword(password); // Certifique-se de que o método comparePassword está implementado no modelo User
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET, // Certify that we have a JWT_SECRET in our environment variables
+      { expiresIn: "1d" } // Token valid for 1 day
+    );
+
+    // Return success response with token and user details
     res.json({
       message: "Login successful",
       token,
