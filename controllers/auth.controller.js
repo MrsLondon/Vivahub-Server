@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 exports.register = async (req, res) => {
+  console.log("Register endpoint hit...");
+  console.log("Request body:", req.body);
   try {
     const { email, password, firstName, lastName, role, businessDetails } =
       req.body;
@@ -14,13 +16,6 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "Email is already registered." });
     }
 
-        // Generate JWT token
-        const token = jwt.sign(
-          { userId: user._id, role: user.role },
-          process.env.JWT_SECRET || "your-secret-key",
-          { expiresIn: "24h" }
-        );
-    
     // Create a new user
     const newUser = new User({
       email,
@@ -35,34 +30,55 @@ exports.register = async (req, res) => {
 
     console.log("Role:", role, "Business Details:", businessDetails);
 
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: newUser._id, role: newUser.role },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "24h" }
+    );
+
     // If the user is a business, create a new salon
     if (role === "business" && businessDetails) {
+      const defaultOpeningHours = {
+        monday: { open: null, close: null },
+        tuesday: { open: null, close: null },
+        wednesday: { open: null, close: null },
+        thursday: { open: null, close: null },
+        friday: { open: null, close: null },
+        saturday: { open: null, close: null },
+        sunday: { open: null, close: null },
+      };
+
+      // Merge the provided opening hours with default values.
+      // If a day is missing or undefined in the provided opening hours,
+      // it will default to { open: null, close: null }.
+      const processedOpeningHours = Object.keys(defaultOpeningHours).reduce(
+        (acc, day) => {
+          acc[day] =
+            businessDetails.openingHours?.[day] || defaultOpeningHours[day];
+          return acc;
+        },
+        {}
+      );
+
       const newSalon = new Salon({
         name: businessDetails.businessName,
         location: businessDetails.address,
         owner: newUser._id,
         email: email,
         phone: businessDetails.phone || "",
-        openingHours: {
-          monday: { open: null, close: null },
-          tuesday: { open: null, close: null },
-          wednesday: { open: null, close: null },
-          thursday: { open: null, close: null },
-          friday: { open: null, close: null },
-          saturday: { open: null, close: null },
-          sunday: { open: null, close: null },
-        },
+        openingHours: processedOpeningHours,
         closedDays: [],
       });
 
       console.log("Creating salon with data:", {
-        name: businessDetails.name,
+        name: businessDetails.businessName,
         location: businessDetails.address,
         description: businessDetails.description,
         phone: businessDetails.phone,
         owner: newUser._id,
         email: email,
-        openingHours: businessDetails.openingHours,
+        openingHours: processedOpeningHours,
       });
 
       try {
