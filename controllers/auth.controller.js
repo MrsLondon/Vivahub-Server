@@ -3,14 +3,14 @@ const Salon = require("../models/Salon");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
+// Register a new user
 exports.register = async (req, res) => {
   console.log("Register endpoint hit...");
   console.log("Request body:", req.body);
   try {
-    const { email, password, firstName, lastName, role, businessDetails } =
-      req.body;
+    const { email, password, firstName, lastName, role, businessDetails } = req.body;
 
-    // Verify if the email is already registered
+    // Check if the email is already registered
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email is already registered." });
@@ -28,6 +28,7 @@ exports.register = async (req, res) => {
 
     await newUser.save();
 
+
     console.log("Role:", role, "Business Details:", businessDetails);
 
     // Generate JWT token
@@ -36,6 +37,7 @@ exports.register = async (req, res) => {
       process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "24h" }
     );
+
 
     // If the user is a business, create a new salon
     if (role === "business" && businessDetails) {
@@ -71,6 +73,7 @@ exports.register = async (req, res) => {
         closedDays: [],
       });
 
+
       console.log("Creating salon with data:", {
         name: businessDetails.businessName,
         location: businessDetails.address,
@@ -81,6 +84,7 @@ exports.register = async (req, res) => {
         openingHours: processedOpeningHours,
       });
 
+
       try {
         await newSalon.save();
       } catch (error) {
@@ -88,13 +92,32 @@ exports.register = async (req, res) => {
       }
     }
 
-    res.status(201).json({ message: "User registered successfully" });
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: newUser._id, role: newUser.role },
+      process.env.JWT_SECRET || "your-secret-key",
+      { expiresIn: "24h" }
+    );
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user: {
+        id: newUser._id,
+        email: newUser.email,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        role: newUser.role,
+        businessDetails: newUser.businessDetails,
+      },
+    });
   } catch (error) {
     console.error("Error during registration:", error.message);
     res.status(500).json({ message: "An error occurred during registration" });
   }
 };
 
+// Login a user
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -102,25 +125,34 @@ exports.login = async (req, res) => {
     // Verify if the user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Invalid email or password." });
+      return res.status(404).json({ message: "User not found" });
     }
 
     // Verify the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "Invalid email or password." });
+      return res.status(401).json({ message: "Invalid email or password." });
     }
 
     // Generate a JWT token
     const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
+      { userId: user._id, role: user.role },
+      process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "1d" }
     );
 
     res.status(200).json({
+      message: "Login successful",
       token,
-      user: { id: user._id, email: user.email, role: user.role },
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        businessDetails: user.businessDetails,
+        createdAt: user.createdAt,
+      },
     });
   } catch (error) {
     console.error("Error during login:", error.message);
