@@ -24,7 +24,7 @@ router.post("/", authenticateUser, isBusiness, addSalon);
 router.get("/user", authenticateUser, isBusiness, getSalonByUser);
 router.get("/", getAllSalons);
 router.get("/:id", getSalonById);
-router.put("/:id", authenticateUser, isBusiness, updateSalon);
-router.delete("/:id", authenticateUser, isBusiness, deleteSalon);
+router.put("/update/:id", authenticateUser, isBusiness, updateSalon);
+router.delete("/delete/:id", authenticateUser, isBusiness, deleteSalon);
 
 module.exports = router;
