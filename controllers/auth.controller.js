@@ -32,11 +32,6 @@ exports.register = async (req, res) => {
     console.log("Role:", role, "Business Details:", businessDetails);
 
     // Generate JWT token
-    const token = jwt.sign(
-      { userId: newUser._id, role: newUser.role },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "24h" }
-    );
 
 
     // If the user is a business, create a new salon
