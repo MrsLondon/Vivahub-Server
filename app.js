@@ -18,7 +18,7 @@ const userRoutes = require("./routes/user.routes");
 
 const canceledBookingRoutes = require("./routes/canceledBooking.routes");
 
-const searchRoutes = require("./routes/search.routes");  // Search functionality routes including language-based filtering
+const searchRoutes = require("./routes/search.routes"); // Search functionality routes including language-based filtering
 
 const app = express();
 
@@ -29,9 +29,9 @@ app.set("views", path.join(__dirname, "views"));
 
 // Middleware
 app.use(express.json());
-app.use(cors());
 app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(cors());
 
 // Log MONGO_URI to verify it's being loaded
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -93,14 +93,15 @@ app.get("/", async (req, res) => {
     const Review = require("./models/Review");
     const CanceledBooking = require("./models/CanceledBooking");
 
-    const [salons, services, bookings, users, reviews, canceledBookings] = await Promise.all([
-      Salon.find().exec(),
-      Service.find().exec(),
-      Booking.find().exec(),
-      User.find().exec(),
-      Review.find().exec(),
-      CanceledBooking.find().exec(),
-    ]);
+    const [salons, services, bookings, users, reviews, canceledBookings] =
+      await Promise.all([
+        Salon.find().exec(),
+        Service.find().exec(),
+        Booking.find().exec(),
+        User.find().exec(),
+        Review.find().exec(),
+        CanceledBooking.find().exec(),
+      ]);
 
     const endpoints = [
       {
@@ -117,7 +118,7 @@ app.get("/", async (req, res) => {
       },
       {
         name: "Bookings",
-        path: "/api/bookings/public", 
+        path: "/api/bookings/public",
         count: bookings.length,
         description: "Check all bookings",
       },
@@ -135,7 +136,7 @@ app.get("/", async (req, res) => {
       },
       {
         name: "Canceled Bookings",
-        path: "/api/canceledBookings/public", 
+        path: "/api/canceledBookings/public",
         count: canceledBookings.length,
         description: "View canceled bookings (Testing View)",
       },
@@ -162,7 +163,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Something broke!", message: err.message });
 });
 
-const PORT = process.env.PORT || 5001;  // Changed default port to 5001
+const PORT = process.env.PORT || 5001; // Changed default port to 5001
 
 // Start server only after MongoDB connects
 const startServer = async () => {

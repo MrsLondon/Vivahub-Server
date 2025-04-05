@@ -61,24 +61,24 @@ exports.getSupportedLanguages = (req, res) => {
 exports.getAllServices = async (req, res, next) => {
   try {
     const services = await Service.find().populate("salon");
-    
+
     if (!services || services.length === 0) {
-      return res.status(404).json({ 
-        status: 'error',
-        message: "No services found" 
+      return res.status(404).json({
+        status: "error",
+        message: "No services found",
       });
     }
-    
+
     res.status(200).json({
-      status: 'success',
-      data: services
+      status: "success",
+      data: services,
     });
   } catch (error) {
     console.error("Error fetching services:", error.message);
-    res.status(500).json({ 
-      status: 'error',
+    res.status(500).json({
+      status: "error",
       message: "Failed to fetch services",
-      error: error.message 
+      error: error.message,
     });
   }
 };
@@ -103,21 +103,21 @@ exports.getServiceById = async (req, res, next) => {
 // Get services associated with the authenticated user
 exports.getServicesByUser = async (req, res, next) => {
   try {
-    console.log("User ID:", req.user.userId); // Log do ID do usuário
+    console.log("User ID:", req.user.userId); // User ID log
 
-    // Converte o ID do usuário para ObjectId, se necessário
+    // Convert userId to ObjectId if necessary
     const userId = new mongoose.Types.ObjectId(req.user.userId);
 
-    // Busca o salão associado ao usuário autenticado
+    // Search the salon by the authenticated user
     const salon = await Salon.findOne({ owner: userId });
     if (!salon) {
       console.log("No salon found for this user.");
       return res.status(404).json({ message: "No salon found for this user." });
     }
 
-    console.log("Salon ID:", salon._id); // Log do ID do salão
+    console.log("Salon ID:", salon._id); // Salon log
 
-    // Busca os serviços associados ao salão
+    // Search services associated with the salon
     const services = await Service.find({ salon: salon._id });
 
     if (!services.length) {
@@ -127,7 +127,7 @@ exports.getServicesByUser = async (req, res, next) => {
         .json({ message: "No services found for this user." });
     }
 
-    console.log("Services:", services); // Log dos serviços encontrados
+    console.log("Services:", services); //log of the services found
 
     res.status(200).json(services);
   } catch (error) {
@@ -177,9 +177,11 @@ exports.updateService = async (req, res, next) => {
 exports.deleteService = async (req, res, next) => {
   try {
     const { id } = req.params;
+    console.log("Service ID received for deletion:", id);
 
     const service = await Service.findById(id);
     if (!service) {
+      console.log("Service not found");
       return res.status(404).json({ message: "Service not found" });
     }
 
