@@ -37,9 +37,9 @@ router.get("/user", authenticateUser, isBusiness, getServicesByUser);
 router.get("/:id", getServiceById);
 
 // Update service - Protected route, business only
-router.put("/:id", authenticateUser, isBusiness, updateService);
+router.put("/update/:id", authenticateUser, isBusiness, updateService);
 
 // Delete service - Protected route, business only
-router.delete("/:id", authenticateUser, isBusiness, deleteService);
+router.delete("/delete/:id", authenticateUser, isBusiness, deleteService);
 
 module.exports = router;
