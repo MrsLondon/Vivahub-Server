@@ -21,11 +21,9 @@ const isBusiness = (req, res, next) => {
 };
 
 // Service routes
+
 // Create new service - Protected route, business only
 router.post("/", authenticateUser, isBusiness, addService);
-
-// Get all services - Public route
-router.get("/", getAllServices);
 
 // Get supported languages - Public route
 router.get("/languages", getSupportedLanguages);
@@ -33,13 +31,16 @@ router.get("/languages", getSupportedLanguages);
 // Get user's services - Protected route, business only
 router.get("/user", authenticateUser, isBusiness, getServicesByUser);
 
-// Get specific service - Public route
-router.get("/:id", getServiceById);
+// Delete service - Protected route, business only
+router.delete("/delete/:id", authenticateUser, isBusiness, deleteService);
 
 // Update service - Protected route, business only
 router.put("/update/:id", authenticateUser, isBusiness, updateService);
 
-// Delete service - Protected route, business only
-router.delete("/delete/:id", authenticateUser, isBusiness, deleteService);
+// Get all services - Public route
+router.get("/", getAllServices);
+
+// Get specific service - Public route
+router.get("/:id", getServiceById);
 
 module.exports = router;
