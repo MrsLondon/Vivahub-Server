@@ -1,7 +1,7 @@
 const User = require("../models/User");
 const Salon = require("../models/Salon");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // Register a new user
 exports.register = async (req, res) => {
@@ -116,15 +116,21 @@ exports.register = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    console.log("Login attempt for:", email);
 
     // Verify if the user exists
     const user = await User.findOne({ email });
     if (!user) {
+      console.log("User not found:", email);
       return res.status(404).json({ message: "User not found" });
     }
+    console.log("User found:", user.email, user.role);
 
     // Verify the password
+    console.log("Comparing passwords...");
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log("Password valid:", isPasswordValid);
+    
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid email or password." });
     }
