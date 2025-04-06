@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const authenticateUser = require("../middlewares/authMiddleware");
+const { uploadImage, processUploadedImage } = require("../middlewares/uploadMiddleware");
 const {
   addReview,
   getAllReviews,
@@ -21,12 +22,12 @@ const isCustomer = (req, res, next) => {
 };
 
 // Review routes
-router.post("/", authenticateUser, isCustomer, addReview);
+router.post("/", authenticateUser, isCustomer, uploadImage, processUploadedImage, addReview);
 router.get("/", getAllReviews);
 router.get("/salon/:salonId", getReviewsBySalon);
 router.get("/service/:serviceId", getReviewsByService);
 router.get("/:id", getReviewById);
-router.put("/:id", authenticateUser, isCustomer, updateReview);
+router.put("/:id", authenticateUser, isCustomer, uploadImage, processUploadedImage, updateReview);
 router.delete("/:id", authenticateUser, isCustomer, deleteReview);
 
 module.exports = router;
