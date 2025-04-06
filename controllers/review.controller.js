@@ -4,6 +4,7 @@ const Booking = require("../models/Booking");
 // Add new review
 exports.addReview = async (req, res, next) => {
   const { bookingId, rating, comment } = req.body;
+  // Image URL will be available in req.body.image if an image was uploaded
 
   try {
     const booking = await Booking.findOne({
@@ -34,14 +35,22 @@ exports.addReview = async (req, res, next) => {
       });
     }
 
-    const newReview = await Review.create({
+    // Create review object with all available data
+    const reviewData = {
       bookingId,
       customerId: booking.customerId,
       salonId: booking.salonId,
       serviceId: booking.serviceId,
       rating,
       comment,
-    });
+    };
+
+    // Add image URL if it exists
+    if (req.body.image) {
+      reviewData.image = req.body.image;
+    }
+
+    const newReview = await Review.create(reviewData);
 
     const populatedReview = await Review.findById(newReview._id)
       .populate("customerId", "firstName lastName")
@@ -145,6 +154,8 @@ exports.updateReview = async (req, res, next) => {
 
     if (rating !== undefined) review.rating = rating;
     if (comment !== undefined) review.comment = comment;
+    // Add image URL if it was uploaded
+    if (req.body.image) review.image = req.body.image;
 
     await review.save();
 
