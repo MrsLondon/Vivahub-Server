@@ -11,6 +11,29 @@ const cancelBooking = async (req, res) => {
       return res.status(404).json({ message: "Booking not found" });
     }
 
+    // Verify if the user is the owner of the booking
+    if (req.user.role === "business") {
+      // Verify if the business is the owner of the booking
+      if (booking.salonId.owner.toString() !== req.user.userId) {
+        return res
+          .status(403)
+          .json({
+            message: "Access denied. You are not the owner of this salon.",
+          });
+      }
+    } else if (req.user.role === "customer") {
+      // Verify if the customer is the owner of the booking
+      if (booking.customerId.toString() !== req.user.userId) {
+        return res
+          .status(403)
+          .json({
+            message: "Access denied. You are not the owner of this booking.",
+          });
+      }
+    } else {
+      return res.status(403).json({ message: "Access denied." });
+    }
+
     // Create a new document in the CanceledBookings collection
     const canceledBooking = new CanceledBooking({
       customerId: booking.customerId,
@@ -50,12 +73,12 @@ const getCanceledBookings = async (req, res) => {
 
 /**
  * Get all canceled bookings without authentication - FOR TESTING/VIEWING ONLY
- * 
+ *
  * Purpose:
  * - Provides a way to view canceled booking data in the view engine (handlebars)
  * - Used for testing and development purposes
  * - NOT meant for production use with sensitive data
- * 
+ *
  * Security Measures:
  * 1. Excludes sensitive information:
  *    - No customer IDs
@@ -64,7 +87,7 @@ const getCanceledBookings = async (req, res) => {
  *    - Service details (name, price, duration)
  *    - Salon details (name, location)
  *    - Cancellation status and dates
- * 
+ *
  * @route GET /api/canceledBookings/public
  * @returns {Array} List of canceled bookings with sensitive data removed
  * @warning This route should be properly secured or disabled in production
@@ -72,9 +95,9 @@ const getCanceledBookings = async (req, res) => {
 const getPublicCanceledBookings = async (req, res) => {
   try {
     const canceledBookings = await CanceledBooking.find()
-      .populate("salonId", "name location")        // Only essential salon info
+      .populate("salonId", "name location") // Only essential salon info
       .populate("serviceId", "name price duration") // Only essential service info
-      .select('-__v -customerId');                // Exclude sensitive data
+      .select("-__v -customerId"); // Exclude sensitive data
 
     res.status(200).json(canceledBookings);
   } catch (error) {
@@ -83,8 +106,8 @@ const getPublicCanceledBookings = async (req, res) => {
   }
 };
 
-module.exports = { 
-  cancelBooking, 
+module.exports = {
+  cancelBooking,
   getCanceledBookings,
-  getPublicCanceledBookings 
+  getPublicCanceledBookings,
 };

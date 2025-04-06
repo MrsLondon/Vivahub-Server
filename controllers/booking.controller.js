@@ -1,6 +1,7 @@
 const Booking = require("../models/Booking");
 const Service = require("../models/Service");
 const Salon = require("../models/Salon");
+const CanceledBooking = require("../models/CanceledBooking");
 
 // Create a new booking
 const createBooking = async (req, res) => {
@@ -152,7 +153,7 @@ const createBooking = async (req, res) => {
     await newBooking.save();
 
     const populatedBooking = await Booking.findById(newBooking._id)
-      .populate("customerId", "firstName lastName")
+      .populate("customerId", "firstName lastName email")
       .populate("salonId", "name")
       .populate("serviceId", "name price duration");
 
@@ -181,11 +182,14 @@ const getAllBookings = async (req, res) => {
     }
 
     const bookings = await Booking.find(query)
-      .populate("customerId", "firstName lastName")
+      .populate("customerId", "firstName lastName email")
       .populate("salonId", "name")
       .populate("serviceId", "name price duration")
       .sort({ appointmentDate: 1, appointmentTime: 1 });
 
+    console.log("Bookings fetched:", bookings);
+
+    console.log("Bookings fetched:", bookings);
     res.json(bookings);
   } catch (error) {
     res
@@ -398,12 +402,12 @@ const cancelBooking = async (req, res) => {
 
 /**
  * Get all bookings without authentication - FOR TESTING/VIEWING ONLY
- * 
+ *
  * Purpose:
  * - Provides a way to view booking data in the view engine (handlebars)
  * - Used for testing and development purposes
  * - NOT meant for production use with sensitive data
- * 
+ *
  * Security Measures:
  * 1. Excludes sensitive information:
  *    - No customer IDs
@@ -412,7 +416,7 @@ const cancelBooking = async (req, res) => {
  *    - Service details (name, price, duration)
  *    - Salon details (name, location)
  *    - Booking status and dates
- * 
+ *
  * @route GET /api/bookings/public
  * @returns {Array} List of bookings with sensitive data removed
  * @warning This route should be properly secured or disabled in production
@@ -420,15 +424,15 @@ const cancelBooking = async (req, res) => {
 const getPublicBookings = async (req, res) => {
   try {
     const bookings = await Booking.find()
-      .populate('serviceId', 'name price duration') // Match model field name
-      .populate('salonId', 'name location')        // Match model field name
-      .select('-__v -customerId')                  // Exclude sensitive data
+      .populate("serviceId", "name price duration") // Match model field name
+      .populate("salonId", "name location") // Match model field name
+      .select("-__v -customerId") // Exclude sensitive data
       .lean(); // Convert to plain JavaScript object for better performance
 
     res.json(bookings);
   } catch (error) {
-    console.error('Error fetching public bookings:', error);
-    res.status(500).json({ message: 'Error fetching bookings' });
+    console.error("Error fetching public bookings:", error);
+    res.status(500).json({ message: "Error fetching bookings" });
   }
 };
 
