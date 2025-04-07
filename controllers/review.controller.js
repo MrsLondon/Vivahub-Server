@@ -3,64 +3,90 @@ const Booking = require("../models/Booking");
 
 // Add new review
 exports.addReview = async (req, res, next) => {
-  const { bookingId, rating, comment } = req.body;
-  // Image URL will be available in req.body.image if an image was uploaded
-
   try {
-    const booking = await Booking.findOne({
-      _id: bookingId,
+    console.log("Review submission received:", req.body);
+    console.log("User:", req.user);
+    console.log("File:", req.file);
+    
+    const { bookingId, salonId, serviceId, rating, comment } = req.body;
+    // Image URL will be available in req.body.image if an image was uploaded
+
+    let reviewData = {
       customerId: req.user.userId,
-    });
-
-    if (!booking) {
-      return res.status(404).json({ message: "Booking not found." });
-    }
-
-    const now = new Date();
-    const bookingDateTime = new Date(
-      `${booking.appointmentDate}T${booking.appointmentTime}`
-    );
-
-    if (now < bookingDateTime) {
-      return res.status(400).json({
-        message:
-          "You can only review a booking after the scheduled date and time.",
-      });
-    }
-
-    const existingReview = await Review.findOne({ bookingId });
-    if (existingReview) {
-      return res.status(400).json({
-        message: "You have already reviewed this booking.",
-      });
-    }
-
-    // Create review object with all available data
-    const reviewData = {
-      bookingId,
-      customerId: booking.customerId,
-      salonId: booking.salonId,
-      serviceId: booking.serviceId,
       rating,
       comment,
     };
+
+    // If bookingId is provided, verify and use booking details
+    if (bookingId) {
+      const booking = await Booking.findOne({
+        _id: bookingId,
+        customerId: req.user.userId,
+      });
+
+      if (!booking) {
+        return res.status(404).json({ message: "Booking not found." });
+      }
+
+      const now = new Date();
+      const bookingDateTime = new Date(
+        `${booking.appointmentDate}T${booking.appointmentTime}`
+      );
+
+      if (now < bookingDateTime) {
+        return res.status(400).json({
+          message:
+            "You can only review a booking after the scheduled date and time.",
+        });
+      }
+
+      const existingReview = await Review.findOne({ bookingId });
+      if (existingReview) {
+        return res.status(400).json({
+          message: "You have already reviewed this booking.",
+        });
+      }
+
+      // Use booking details
+      reviewData.bookingId = bookingId;
+      reviewData.salonId = booking.salonId;
+      reviewData.serviceId = booking.serviceId;
+    } 
+    // If direct salonId and serviceId are provided (without bookingId)
+    else if (salonId && serviceId) {
+      reviewData.salonId = salonId;
+      reviewData.serviceId = serviceId;
+    } 
+    // If neither bookingId nor salonId+serviceId are provided
+    else {
+      return res.status(400).json({
+        message: "Either bookingId or both salonId and serviceId must be provided.",
+      });
+    }
 
     // Add image URL if it exists
     if (req.body.image) {
       reviewData.image = req.body.image;
     }
 
-    const newReview = await Review.create(reviewData);
+    const review = new Review(reviewData);
+    await review.save();
 
-    const populatedReview = await Review.findById(newReview._id)
+    const populatedReview = await Review.findById(review._id)
       .populate("customerId", "firstName lastName")
       .populate("salonId", "name")
       .populate("serviceId", "name");
 
-    res.status(201).json(populatedReview);
+    res.status(201).json({
+      message: "Review added successfully.",
+      review: populatedReview,
+    });
   } catch (error) {
-    console.error("Error creating review:", error.message);
-    next(error);
+    console.error("Error adding review:", error);
+    res.status(500).json({
+      message: "Error adding review.",
+      error: error.message,
+    });
   }
 };
 
