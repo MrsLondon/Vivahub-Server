@@ -1,4 +1,9 @@
+const mongoose = require("mongoose");
 const Salon = require("../models/Salon");
+const Service = require("../models/Service");
+const Booking = require("../models/Booking");
+const User = require("../models/User");
+const Review = require("../models/Review");
 
 // Add a new salon (business only)
 exports.addSalon = async (req, res, next) => {
@@ -183,12 +188,12 @@ exports.updateSalon = async (req, res, next) => {
   }
 };
 
-// Delete a salon and the services associated with it (owner only)
+// Delete a salon, its services, bookings, reviews, and the associated user (owner only)
 exports.deleteSalon = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    // Verify if the ID is valid
+    // Verify if the salon ID is valid
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid salon ID" });
     }
@@ -205,17 +210,34 @@ exports.deleteSalon = async (req, res, next) => {
       });
     }
 
+    // Search all services associated with the salon
+    const services = await Service.find({ salon: id });
+
+    // Delete all bookings associated with the services
+    const serviceIds = services.map((service) => service._id);
+    await Booking.deleteMany({ serviceId: { $in: serviceIds } });
+
+    // Delete all review associated with the services
+    await Review.deleteMany({ serviceId: { $in: serviceIds } });
+
     // Delete all services associated with the salon
-    await Service.deleteMany({ salonId: id });
+    await Service.deleteMany({ salon: id });
 
     // Delete the salon
     await Salon.findByIdAndDelete(id);
 
-    res
-      .status(200)
-      .json({ message: "Salon and its services deleted successfully" });
+    // Delete the user associated with the salon
+    await User.findByIdAndDelete(salon.owner);
+
+    res.status(200).json({
+      message:
+        "Salon, its services, associated bookings, reviews, and the owner user deleted successfully",
+    });
   } catch (error) {
-    console.error("Error deleting salon:", error.message);
+    console.error(
+      "Error deleting salon, associated data, and user:",
+      error.message
+    );
     next(error);
   }
 };

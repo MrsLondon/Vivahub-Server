@@ -20,11 +20,11 @@ const isBusiness = (req, res, next) => {
 };
 
 // Salon routes
-router.post("/", authenticateUser, isBusiness, addSalon);
-router.get("/user", authenticateUser, isBusiness, getSalonByUser);
-router.get("/", getAllSalons);
-router.get("/:id", getSalonById);
-router.put("/:id", authenticateUser, isBusiness, updateSalon);
-router.delete("/:id", authenticateUser, isBusiness, deleteSalon);
+router.post("/", authenticateUser, isBusiness, addSalon); // Create a new salon
+router.get("/user", authenticateUser, isBusiness, getSalonByUser); // Get salon by user
+router.put("/update/:id", authenticateUser, isBusiness, updateSalon); // Update salon by ID
+router.delete("/delete/:id", authenticateUser, isBusiness, deleteSalon); // Delete salon by ID
+router.get("/", getAllSalons); // Get all salons
+router.get("/:id", getSalonById); // Get salon by ID
 
 module.exports = router;
