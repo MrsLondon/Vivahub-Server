@@ -6,9 +6,12 @@ const getAllUsers = async (req, res) => {
     const users = await User.find({}, { password: 0 }); // Exclude password field
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching users", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error fetching users", error: error.message });
   }
 };
+
 
 module.exports = {
   getAllUsers,
