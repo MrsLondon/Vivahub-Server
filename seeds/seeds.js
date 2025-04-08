@@ -8,7 +8,8 @@ const bcrypt = require("bcryptjs");
 require("dotenv").config();
 
 // Database connection
-const MONGODB_URI = process.env.MONGO_URI || "mongodb://localhost:27017/vivahub-dev";
+const MONGODB_URI =
+  process.env.MONGO_URI || "mongodb://localhost:27017/vivahub-dev";
 
 // Seed data
 const userData = [
@@ -20,7 +21,6 @@ const userData = [
     lastName: "Doe",
     role: "customer",
     phone: "1234567890",
-    address: "123 Main St, City"
   },
   {
     email: "jane@example.com",
@@ -29,7 +29,6 @@ const userData = [
     lastName: "Smith",
     role: "customer",
     phone: "0987654321",
-    address: "456 Oak St, City"
   },
   {
     email: "alex@example.com",
@@ -38,7 +37,6 @@ const userData = [
     lastName: "Johnson",
     role: "customer",
     phone: "5556667777",
-    address: "789 Pine St, City"
   },
   {
     email: "maria@example.com",
@@ -47,7 +45,6 @@ const userData = [
     lastName: "Garcia",
     role: "customer",
     phone: "8889990000",
-    address: "101 Elm St, City"
   },
   // Business owners
   {
@@ -66,15 +63,15 @@ const userData = [
       phone: "1112223333",
       email: "salon1@example.com",
       openingHours: {
-        monday: "9:00-18:00",
-        tuesday: "9:00-18:00",
-        wednesday: "9:00-18:00",
-        thursday: "9:00-18:00",
-        friday: "9:00-18:00",
-        saturday: "10:00-16:00",
-        sunday: "Closed"
-      }
-    }
+        monday: { open: "09:00", close: "18:00" },
+        tuesday: { open: "09:00", close: "18:00" },
+        wednesday: { open: "09:00", close: "18:00" },
+        thursday: { open: "09:00", close: "18:00" },
+        friday: { open: "09:00", close: "18:00" },
+        saturday: { open: "10:00", close: "16:00" },
+        sunday: { open: null, close: null }, // Closed
+      },
+    },
   },
   {
     email: "salon2@example.com",
@@ -92,15 +89,15 @@ const userData = [
       phone: "4445556666",
       email: "salon2@example.com",
       openingHours: {
-        monday: "10:00-19:00",
-        tuesday: "10:00-19:00",
-        wednesday: "10:00-19:00",
-        thursday: "10:00-19:00",
-        friday: "10:00-19:00",
-        saturday: "11:00-17:00",
-        sunday: "Closed"
-      }
-    }
+        monday: { open: "09:00", close: "18:00" },
+        tuesday: { open: "09:00", close: "18:00" },
+        wednesday: { open: "09:00", close: "18:00" },
+        thursday: { open: "09:00", close: "18:00" },
+        friday: { open: "09:00", close: "18:00" },
+        saturday: { open: "10:00", close: "16:00" },
+        sunday: { open: null, close: null }, // Closed
+      },
+    },
   },
   {
     email: "salon3@example.com",
@@ -118,15 +115,15 @@ const userData = [
       phone: "7778889999",
       email: "salon3@example.com",
       openingHours: {
-        monday: "9:00-20:00",
-        tuesday: "9:00-20:00",
-        wednesday: "9:00-20:00",
-        thursday: "9:00-20:00",
-        friday: "9:00-20:00",
-        saturday: "10:00-18:00",
-        sunday: "12:00-16:00"
-      }
-    }
+        monday: { open: "09:00", close: "18:00" },
+        tuesday: { open: "09:00", close: "18:00" },
+        wednesday: { open: "09:00", close: "18:00" },
+        thursday: { open: "09:00", close: "18:00" },
+        friday: { open: "09:00", close: "18:00" },
+        saturday: { open: "10:00", close: "16:00" },
+        sunday: { open: null, close: null }, // Closed
+      },
+    },
   },
   {
     email: "salon4@example.com",
@@ -144,15 +141,15 @@ const userData = [
       phone: "2223334444",
       email: "salon4@example.com",
       openingHours: {
-        monday: "11:00-19:00",
-        tuesday: "11:00-19:00",
-        wednesday: "11:00-19:00",
-        thursday: "11:00-19:00",
-        friday: "11:00-19:00",
-        saturday: "10:00-17:00",
-        sunday: "Closed"
-      }
-    }
+        monday: { open: "09:00", close: "18:00" },
+        tuesday: { open: "09:00", close: "18:00" },
+        wednesday: { open: "09:00", close: "18:00" },
+        thursday: { open: "09:00", close: "18:00" },
+        friday: { open: "09:00", close: "18:00" },
+        saturday: { open: "10:00", close: "16:00" },
+        sunday: { open: null, close: null }, // Closed
+      },
+    },
   },
   {
     email: "salon5@example.com",
@@ -170,16 +167,16 @@ const userData = [
       phone: "6667778888",
       email: "salon5@example.com",
       openingHours: {
-        monday: "10:00-18:00",
-        tuesday: "10:00-18:00",
-        wednesday: "10:00-18:00",
-        thursday: "10:00-18:00",
-        friday: "10:00-18:00",
-        saturday: "9:00-15:00",
-        sunday: "Closed"
-      }
-    }
-  }
+        monday: { open: "09:00", close: "18:00" },
+        tuesday: { open: "09:00", close: "18:00" },
+        wednesday: { open: "09:00", close: "18:00" },
+        thursday: { open: "09:00", close: "18:00" },
+        friday: { open: "09:00", close: "18:00" },
+        saturday: { open: "10:00", close: "16:00" },
+        sunday: { open: null, close: null }, // Closed
+      },
+    },
+  },
 ];
 
 const salonData = [
@@ -188,46 +185,51 @@ const salonData = [
     location: "789 Business Ave, City",
     phone: "1112223333",
     email: "salon1@example.com",
-    description: "Luxury beauty services for all ages and styles. Our experienced team provides top-quality services in a relaxing environment.",
+    description:
+      "Luxury beauty services for all ages and styles. Our experienced team provides top-quality services in a relaxing environment.",
     owner: null, // Will be set after user creation
-    services: [] // Will be populated after service creation
+    services: [], // Will be populated after service creation
   },
   {
     name: "Modern Style Studio",
     location: "321 Commerce St, City",
     phone: "4445556666",
     email: "salon2@example.com",
-    description: "Contemporary styling services with the latest trends and techniques. We focus on personalized experiences for each client.",
+    description:
+      "Contemporary styling services with the latest trends and techniques. We focus on personalized experiences for each client.",
     owner: null, // Will be set after user creation
-    services: [] // Will be populated after service creation
+    services: [], // Will be populated after service creation
   },
   {
     name: "Glamour & Glow Beauty Salon",
     location: "555 Market St, City",
     phone: "7778889999",
     email: "salon3@example.com",
-    description: "Premium beauty treatments and services designed to make you look and feel your best. Specializing in luxury experiences.",
+    description:
+      "Premium beauty treatments and services designed to make you look and feel your best. Specializing in luxury experiences.",
     owner: null, // Will be set after user creation
-    services: [] // Will be populated after service creation
+    services: [], // Will be populated after service creation
   },
   {
     name: "Sergi's Salon",
     location: "777 Fashion Blvd, City",
     phone: "2223334444",
     email: "salon4@example.com",
-    description: "Cutting-edge hair design and styling from award-winning stylists. We pride ourselves on innovation and excellence.",
+    description:
+      "Cutting-edge hair design and styling from award-winning stylists. We pride ourselves on innovation and excellence.",
     owner: null, // Will be set after user creation
-    services: [] // Will be populated after service creation
+    services: [], // Will be populated after service creation
   },
   {
     name: "Brunella Salon",
     location: "999 Spa Lane, City",
     phone: "6667778888",
     email: "salon5@example.com",
-    description: "Relaxing spa and beauty treatments in a tranquil setting. Our holistic approach combines wellness with beauty.",
+    description:
+      "Relaxing spa and beauty treatments in a tranquil setting. Our holistic approach combines wellness with beauty.",
     owner: null, // Will be set after user creation
-    services: [] // Will be populated after service creation
-  }
+    services: [], // Will be populated after service creation
+  },
 ];
 
 const serviceData = [
@@ -237,149 +239,169 @@ const serviceData = [
     description: "Professional haircut service for women",
     price: 45,
     duration: 45,
-    salon: null // Will be set after salon creation
+    salon: null, // Will be set after salon creation
+    languageSpoken: ["en-us", "es-es", "pt-br"],
   },
   {
     name: "Men's Haircut",
     description: "Professional haircut service for men",
     price: 30,
     duration: 30,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "de-de"],
   },
   {
     name: "Hair Coloring",
     description: "Full hair coloring service",
     price: 80,
     duration: 120,
-    salon: null
+    salon: null,
+    languageSpoken: ["it-it", "es-es", "pt-br"],
   },
   {
     name: "Blowout & Styling",
     description: "Professional blowout and styling",
     price: 40,
     duration: 45,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "nl-nl"],
   },
-  
+
   // Modern Style Studio Services
   {
     name: "Balayage",
     description: "Hand-painted highlights for a natural look",
     price: 120,
     duration: 150,
-    salon: null
+    salon: null,
+    languageSpoken: ["es-es", "pt-br"],
   },
   {
     name: "Keratin Treatment",
     description: "Smoothing treatment for frizzy hair",
     price: 150,
     duration: 120,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "it-it", "de-de"],
   },
   {
     name: "Hair Extensions",
     description: "Premium hair extension application",
     price: 200,
     duration: 180,
-    salon: null
+    salon: null,
+    languageSpoken: ["pt-br", "nl-nl"],
   },
   {
     name: "Bridal Updo",
     description: "Elegant updo styling for brides",
     price: 85,
     duration: 60,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "es-es"],
   },
-  
+
   // Glamour & Glow Beauty Salon Services
   {
     name: "Manicure",
     description: "Classic manicure service",
     price: 25,
     duration: 45,
-    salon: null
+    salon: null,
+    languageSpoken: ["it-it", "pt-br"],
   },
   {
     name: "Pedicure",
     description: "Luxury pedicure service",
     price: 35,
     duration: 60,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "de-de"],
   },
   {
     name: "Gel Nails",
     description: "Long-lasting gel nail application",
     price: 40,
     duration: 60,
-    salon: null
+    salon: null,
+    languageSpoken: ["es-es", "nl-nl"],
   },
   {
     name: "Facial Treatment",
     description: "Rejuvenating facial treatment",
     price: 65,
     duration: 60,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "it-it"],
   },
-  
+
   // Sergi's Salon Services
   {
     name: "Haircut & Styling",
     description: "Complete haircut and styling service",
     price: 55,
     duration: 60,
-    salon: null
+    salon: null,
+    languageSpoken: ["pt-br", "de-de"],
   },
   {
     name: "Highlights",
     description: "Partial or full highlights",
     price: 90,
     duration: 90,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "es-es", "it-it"],
   },
   {
     name: "Hair Mask Treatment",
     description: "Deep conditioning treatment",
     price: 30,
     duration: 30,
-    salon: null
+    salon: null,
+    languageSpoken: ["nl-nl", "pt-br"],
   },
   {
     name: "Children's Haircut",
     description: "Haircut service for children",
     price: 25,
     duration: 30,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "es-es"],
   },
-  
+
   // Brunella Salon Services
   {
     name: "Full Body Massage",
     description: "Relaxing full body massage",
     price: 80,
     duration: 60,
-    salon: null
+    salon: null,
+    languageSpoken: ["it-it", "de-de"],
   },
   {
     name: "Waxing Service",
     description: "Hair removal waxing service",
     price: 40,
     duration: 45,
-    salon: null
+    salon: null,
+    languageSpoken: ["en-us", "pt-br"],
   },
   {
     name: "Makeup Application",
     description: "Professional makeup application",
     price: 60,
     duration: 60,
-    salon: null
+    salon: null,
+    languageSpoken: ["es-es", "it-it"],
   },
   {
     name: "Eyebrow Shaping",
     description: "Professional eyebrow shaping and tinting",
     price: 25,
     duration: 30,
-    salon: null
-  }
+    salon: null,
+    languageSpoken: ["en-us", "pt-br"],
+  },
 ];
 
 // Create a mix of past, current, and future bookings
@@ -402,7 +424,7 @@ const bookingData = [
     appointmentDate: lastWeek,
     appointmentTime: "10:00",
     bookingStatus: "Service Completed",
-    paymentStatus: "paid"
+    paymentStatus: "paid",
   },
   {
     customerId: null,
@@ -411,7 +433,7 @@ const bookingData = [
     appointmentDate: lastWeek,
     appointmentTime: "14:00",
     bookingStatus: "Service Completed",
-    paymentStatus: "paid"
+    paymentStatus: "paid",
   },
   {
     customerId: null,
@@ -420,9 +442,9 @@ const bookingData = [
     appointmentDate: yesterday,
     appointmentTime: "11:30",
     bookingStatus: "Service Completed",
-    paymentStatus: "paid"
+    paymentStatus: "paid",
   },
-  
+
   // Current day bookings
   {
     customerId: null,
@@ -430,10 +452,10 @@ const bookingData = [
     serviceId: null,
     appointmentDate: today,
     appointmentTime: "16:00",
-    bookingStatus: "Pending",
-    paymentStatus: "paid"
+    bookingStatus: "Service Completed",
+    paymentStatus: "paid",
   },
-  
+
   // Future bookings
   {
     customerId: null,
@@ -442,7 +464,7 @@ const bookingData = [
     appointmentDate: tomorrow,
     appointmentTime: "09:30",
     bookingStatus: "Pending",
-    paymentStatus: "unpaid"
+    paymentStatus: "unpaid",
   },
   {
     customerId: null,
@@ -451,7 +473,7 @@ const bookingData = [
     appointmentDate: tomorrow,
     appointmentTime: "13:00",
     bookingStatus: "Pending",
-    paymentStatus: "paid"
+    paymentStatus: "paid",
   },
   {
     customerId: null,
@@ -460,8 +482,8 @@ const bookingData = [
     appointmentDate: nextWeek,
     appointmentTime: "15:30",
     bookingStatus: "Pending",
-    paymentStatus: "unpaid"
-  }
+    paymentStatus: "unpaid",
+  },
 ];
 
 // Sample review data (will be populated with actual IDs during seeding)
@@ -471,17 +493,21 @@ const reviewData = [
     salonId: null,
     serviceId: null,
     rating: 5,
-    comment: "Excellent service! My hair looks amazing and the staff was very friendly.",
-    image: "https://res.cloudinary.com/duu9km8ss/image/upload/v1712428210/vivahub/reviews/sample_review_1.jpg"
+    comment:
+      "Excellent service! My hair looks amazing and the staff was very friendly.",
+    image:
+      "https://res.cloudinary.com/duu9km8ss/image/upload/v1712428210/vivahub/reviews/sample_review_1.jpg",
   },
   {
     customerId: null,
     salonId: null,
     serviceId: null,
     rating: 4,
-    comment: "Great experience overall. The salon was clean and the stylist was professional.",
-    image: "https://res.cloudinary.com/duu9km8ss/image/upload/v1712428210/vivahub/reviews/sample_review_2.jpg"
-  }
+    comment:
+      "Great experience overall. The salon was clean and the stylist was professional.",
+    image:
+      "https://res.cloudinary.com/duu9km8ss/image/upload/v1712428210/vivahub/reviews/sample_review_2.jpg",
+  },
 ];
 
 // Function to hash passwords
@@ -505,13 +531,16 @@ const testLogin = async () => {
       console.log("Test user not found!");
       return;
     }
-    
+
     console.log("Test user found:", testUser.email);
-    
+
     // Test password comparison
     const testPassword = "password123";
-    const isPasswordValid = await bcrypt.compare(testPassword, testUser.password);
-    
+    const isPasswordValid = await bcrypt.compare(
+      testPassword,
+      testUser.password
+    );
+
     console.log("Password comparison test:");
     console.log("- Raw password:", testPassword);
     console.log("- Stored hash:", testUser.password);
@@ -542,25 +571,37 @@ const seedDatabase = async () => {
       password: "password123",
       firstName: "John",
       lastName: "Doe",
-      role: "customer"
+      role: "customer",
     });
     await testUser.save();
     console.log("Test user created with User model's password hashing");
 
     // Hash passwords and create remaining users
-    const remainingUsers = userData.filter(user => user.email !== "john@example.com");
+    const remainingUsers = userData.filter(
+      (user) => user.email !== "john@example.com"
+    );
     const hashedUsers = await hashPasswords(remainingUsers);
     const users = await User.insertMany(hashedUsers);
     const allUsers = [testUser, ...users];
     console.log(`${allUsers.length} users seeded successfully`);
 
     // Create salons and link them to business owners
-    const businessOwners = allUsers.filter(user => user.role === "business");
+    const businessOwners = allUsers.filter((user) => user.role === "business");
+    const defaultOpeningHours = {
+      monday: { open: "09:00", close: "18:00" },
+      tuesday: { open: "09:00", close: "18:00" },
+      wednesday: { open: "09:00", close: "18:00" },
+      thursday: { open: "09:00", close: "18:00" },
+      friday: { open: "09:00", close: "18:00" },
+      saturday: { open: "10:00", close: "16:00" },
+      sunday: { open: null, close: null }, // Closed on Sundays
+    };
     const salons = await Promise.all(
       salonData.map(async (salon, index) => {
         const newSalon = new Salon({
           ...salon,
-          owner: businessOwners[index]._id
+          owner: businessOwners[index]._id,
+          openingHours: defaultOpeningHours,
         });
         return newSalon.save();
       })
@@ -572,40 +613,48 @@ const seedDatabase = async () => {
       serviceData.map(async (service, index) => {
         // Distribute services among salons (4 services per salon)
         const salonIndex = Math.floor(index / 4);
+        const salon = salons[salonIndex];
+
+        // Create the service
         const newService = new Service({
           ...service,
-          salon: salons[salonIndex]._id
+          salon: salon._id, // Associate the service with the salon
         });
-        return newService.save();
+        const savedService = await newService.save();
+
+        // Add the service ID to the salon's services array
+        salon.services.push(savedService._id);
+
+        // Add the service's languages to the salon's languageSpoken array
+        const updatedLanguages = new Set([
+          ...(salon.languageSpoken || []), // Existing languages
+          ...(service.languageSpoken || []), // Languages from the new service
+        ]);
+        salon.languageSpoken = Array.from(updatedLanguages); // Remove duplicates
+
+        return savedService;
       })
     );
+
+    // Save all salons after updating their services and languages
+    await Promise.all(salons.map((salon) => salon.save()));
+
     console.log(`${services.length} services seeded successfully`);
 
-    // Update salons with their services
-    await Promise.all(
-      salons.map(async (salon, index) => {
-        const salonServices = services.filter(service => 
-          service.salon.toString() === salon._id.toString()
-        );
-        salon.services = salonServices.map(service => service._id);
-        return salon.save();
-      })
-    );
-
     // Create bookings and link them to users, salons, and services
-    const customers = allUsers.filter(user => user.role === "customer");
+    const customers = allUsers.filter((user) => user.role === "customer");
     const bookings = await Promise.all(
       bookingData.map(async (booking, index) => {
         // Distribute bookings among customers, salons, and services
         const customerIndex = index % customers.length;
         const salonIndex = index % salons.length;
         const serviceIndex = (index * 2) % services.length; // Vary the services more
-        
+
         const newBooking = new Booking({
           ...booking,
           customerId: customers[customerIndex]._id,
           salonId: salons[salonIndex]._id,
-          serviceId: services[serviceIndex]._id
+          serviceId: services[serviceIndex]._id,
         });
         return newBooking.save();
       })
@@ -613,22 +662,53 @@ const seedDatabase = async () => {
     console.log(`${bookings.length} bookings seeded successfully`);
 
     // Create reviews for completed bookings
-    const completedBookings = bookings.filter(booking => booking.bookingStatus === "Service Completed");
+    // Filter bookings with "service completed" status
+    // IDs dos bookings para os quais queremos criar reviews
+
+    // IDs dos bookings para os quais queremos criar reviews
+    const bookingIdsForReviews = [
+      "67f575c5faf9337830eadf0c",
+      "67f575c5faf9337830eadf0e",
+      "67f575c5faf9337830eadf0d",
+      "67f575c5faf9337830eadf0f",
+    ];
+
+    // Converta os IDs fornecidos para ObjectId
+    const bookingObjectIdsForReviews = bookingIdsForReviews.map(
+      (id) => new mongoose.Types.ObjectId(id)
+    );
+
+    // Filtrar bookings com os IDs fornecidos
+    const bookingsForReviews = bookings.filter((booking) =>
+      bookingObjectIdsForReviews.some((id) => id.equals(booking._id))
+    );
+    console.log("Bookings for Reviews:", bookingsForReviews);
+
     const reviews = await Promise.all(
-      reviewData.map(async (review, index) => {
-        if (index < completedBookings.length) {
-          const booking = completedBookings[index];
-          const newReview = new Review({
-            ...review,
-            customerId: booking.customerId,
-            salonId: booking.salonId,
-            serviceId: booking.serviceId
-          });
-          return newReview.save();
-        }
+      bookingsForReviews.map(async (booking, index) => {
+        console.log(
+          `Processing review for booking at index ${index}:`,
+          booking
+        );
+
+        // Criar o review
+        const newReview = new Review({
+          bookingId: booking._id, // Associa o review ao booking correto
+          customerId: booking.customerId,
+          salonId: booking.salonId,
+          serviceId: booking.serviceId,
+          rating: 5, // Exemplo de avaliação
+          comment: `Review automático para o booking ${booking._id}`,
+        });
+
+        console.log(`Creating review for booking ID: ${booking._id}`);
+        return newReview.save();
       })
     );
-    console.log(`${reviews.filter(r => r).length} reviews seeded successfully`);
+
+    console.log(
+      `${reviews.filter((r) => r).length} reviews seeded successfully`
+    );
 
     // Test login with a seeded user
     await testLogin();
@@ -638,10 +718,10 @@ const seedDatabase = async () => {
     console.log("- Customer: john@example.com / password123");
     console.log("- Business: salon1@example.com / password123");
     console.log("\nCompleted bookings that can be reviewed:");
-    completedBookings.forEach((booking, index) => {
-      console.log(`- Booking ID: ${booking._id}`);
-    });
-    
+    // completedBookings.forEach((booking, index) => {
+    //   console.log(`- Booking ID: ${booking._id}`);
+    // });
+
     process.exit(0);
   } catch (error) {
     console.error("Error seeding database:", error);
