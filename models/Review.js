@@ -17,6 +17,11 @@ const reviewSchema = new mongoose.Schema({
     ref: "Service", // Reference to the service model
     required: true,
   },
+  bookingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Booking", // Reference to the booking model
+    required: false, // Not required as reviews can be added without a booking
+  },
   rating: {
     type: Number,
     required: true,
@@ -30,10 +35,6 @@ const reviewSchema = new mongoose.Schema({
   image: {
     type: String,
     trim: true,
-    match: [
-      /^https?:\/\/res\.cloudinary\.com\/[^\s]+$/,
-      "Please enter a valid Cloudinary URL",
-    ], // Regex to validate Cloudinary URLs
   },
   createdAt: {
     type: Date,
