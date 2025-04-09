@@ -30,16 +30,17 @@ app.set("views", path.join(__dirname, "views"));
 // Middleware
 app.use(express.json());
 
-app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5177'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://vivahub.netlify.app"], // Allow requests from these origins
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
-app.use(cors());
 
 // Log MONGO_URI to verify it's being loaded
 console.log("MONGO_URI:", process.env.MONGO_URI);
@@ -72,6 +73,20 @@ const connectWithRetry = async () => {
     }
   }
 };
+
+// Middleware to deal with CORS preflight requests
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    );
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    return res.status(200).end();
+  }
+  next();
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
