@@ -189,6 +189,10 @@ const salonData = [
       "Luxury beauty services for all ages and styles. Our experienced team provides top-quality services in a relaxing environment.",
     owner: null, // Will be set after user creation
     services: [], // Will be populated after service creation
+    coordinates: {
+      lat: 51.5074,
+      lng: -0.1278,
+    },
   },
   {
     name: "Modern Style Studio",
@@ -199,6 +203,10 @@ const salonData = [
       "Contemporary styling services with the latest trends and techniques. We focus on personalized experiences for each client.",
     owner: null, // Will be set after user creation
     services: [], // Will be populated after service creation
+    coordinates: {
+      lat: 51.5144,
+      lng: -0.1337,
+    },
   },
   {
     name: "Glamour & Glow Beauty Salon",
@@ -209,6 +217,10 @@ const salonData = [
       "Premium beauty treatments and services designed to make you look and feel your best. Specializing in luxury experiences.",
     owner: null, // Will be set after user creation
     services: [], // Will be populated after service creation
+    coordinates: {
+      lat: 51.5107,
+      lng: -0.1231,
+    },
   },
   {
     name: "Sergi's Salon",
@@ -219,6 +231,10 @@ const salonData = [
       "Cutting-edge hair design and styling from award-winning stylists. We pride ourselves on innovation and excellence.",
     owner: null, // Will be set after user creation
     services: [], // Will be populated after service creation
+    coordinates: {
+      lat: 51.5033,
+      lng: -0.1195,
+    },
   },
   {
     name: "Brunella Salon",
@@ -229,6 +245,10 @@ const salonData = [
       "Relaxing spa and beauty treatments in a tranquil setting. Our holistic approach combines wellness with beauty.",
     owner: null, // Will be set after user creation
     services: [], // Will be populated after service creation
+    coordinates: {
+      lat: 51.5012,
+      lng: -0.1259,
+    },
   },
 ];
 

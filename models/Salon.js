@@ -85,6 +85,10 @@ const salonSchema = new mongoose.Schema({
     type: [String], // Array of strings to store languages
     default: [], // Default to an empty array
   },
+  coordinates: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null }
+  },
   createdAt: {
     type: Date,
     default: Date.now,
