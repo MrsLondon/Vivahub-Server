@@ -15,15 +15,15 @@ const MONGODB_URI =
 const userData = [
   // Customer users
   {
-    email: "john@example.com",
+    email: "ayat@gmail.com",
     password: "password123",
-    firstName: "John",
-    lastName: "Doe",
+    firstName: "ayat",
+    lastName: "jay",
     role: "customer",
     phone: "1234567890",
   },
   {
-    email: "jane@example.com",
+    email: "jane@gmail.com",
     password: "password123",
     firstName: "Jane",
     lastName: "Smith",
@@ -31,7 +31,7 @@ const userData = [
     phone: "0987654321",
   },
   {
-    email: "alex@example.com",
+    email: "alex@gmail.com",
     password: "password123",
     firstName: "Alex",
     lastName: "Johnson",
@@ -39,7 +39,7 @@ const userData = [
     phone: "5556667777",
   },
   {
-    email: "maria@example.com",
+    email: "maria@gmail.com",
     password: "password123",
     firstName: "Maria",
     lastName: "Garcia",
@@ -48,7 +48,7 @@ const userData = [
   },
   // Business owners
   {
-    email: "salon1@example.com",
+    email: "sarah@gmail.com",
     password: "password123",
     firstName: "Sarah",
     lastName: "Johnson",
@@ -61,7 +61,7 @@ const userData = [
       description: "Luxury beauty services for all",
       address: "789 Business Ave, City",
       phone: "1112223333",
-      email: "salon1@example.com",
+      email: "sarah@gmail.com",
       openingHours: {
         monday: { open: "09:00", close: "18:00" },
         tuesday: { open: "09:00", close: "18:00" },
@@ -74,7 +74,7 @@ const userData = [
     },
   },
   {
-    email: "salon2@example.com",
+    email: "mike@gmail.com",
     password: "password123",
     firstName: "Mike",
     lastName: "Wilson",
@@ -87,7 +87,7 @@ const userData = [
       description: "Contemporary styling services",
       address: "321 Commerce St, City",
       phone: "4445556666",
-      email: "salon2@example.com",
+      email: "mike@gmail.com",
       openingHours: {
         monday: { open: "09:00", close: "18:00" },
         tuesday: { open: "09:00", close: "18:00" },
@@ -100,7 +100,7 @@ const userData = [
     },
   },
   {
-    email: "salon3@example.com",
+    email: "emma@gmail.com",
     password: "password123",
     firstName: "Emma",
     lastName: "Davis",
@@ -113,7 +113,7 @@ const userData = [
       description: "Premium beauty treatments and services",
       address: "555 Market St, City",
       phone: "7778889999",
-      email: "salon3@example.com",
+      email: "emma@gmail.com",
       openingHours: {
         monday: { open: "09:00", close: "18:00" },
         tuesday: { open: "09:00", close: "18:00" },
@@ -126,7 +126,7 @@ const userData = [
     },
   },
   {
-    email: "salon4@example.com",
+    email: "david@gmail.com",
     password: "password123",
     firstName: "David",
     lastName: "Brown",
@@ -139,7 +139,7 @@ const userData = [
       description: "Cutting-edge hair design and styling",
       address: "777 Fashion Blvd, City",
       phone: "2223334444",
-      email: "salon4@example.com",
+      email: "david@gmail.com",
       openingHours: {
         monday: { open: "09:00", close: "18:00" },
         tuesday: { open: "09:00", close: "18:00" },
@@ -152,7 +152,7 @@ const userData = [
     },
   },
   {
-    email: "salon5@example.com",
+    email: "olivia@gmail.com",
     password: "password123",
     firstName: "Olivia",
     lastName: "Martinez",
@@ -160,12 +160,12 @@ const userData = [
     phone: "6667778888",
     address: "999 Spa Lane, City",
     businessDetails: {
-      businessName: "Brunella Salon",
+      businessName: "Olivia Salon",
       businessType: "Salon",
       description: "Relaxing spa and beauty treatments",
       address: "999 Spa Lane, City",
       phone: "6667778888",
-      email: "salon5@example.com",
+      email: "olivia@gmail.com",
       openingHours: {
         monday: { open: "09:00", close: "18:00" },
         tuesday: { open: "09:00", close: "18:00" },
@@ -184,7 +184,7 @@ const salonData = [
     name: "Elegant Beauty Salon",
     location: "789 Business Ave, City",
     phone: "1112223333",
-    email: "salon1@example.com",
+    email: "sarah@gmail.com",
     description:
       "Luxury beauty services for all ages and styles. Our experienced team provides top-quality services in a relaxing environment.",
     owner: null, // Will be set after user creation
@@ -198,7 +198,7 @@ const salonData = [
     name: "Modern Style Studio",
     location: "321 Commerce St, City",
     phone: "4445556666",
-    email: "salon2@example.com",
+    email: "mike@gmail.comm",
     description:
       "Contemporary styling services with the latest trends and techniques. We focus on personalized experiences for each client.",
     owner: null, // Will be set after user creation
@@ -212,7 +212,7 @@ const salonData = [
     name: "Glamour & Glow Beauty Salon",
     location: "555 Market St, City",
     phone: "7778889999",
-    email: "salon3@example.com",
+    email: "emma@gmail.com",
     description:
       "Premium beauty treatments and services designed to make you look and feel your best. Specializing in luxury experiences.",
     owner: null, // Will be set after user creation
@@ -226,7 +226,7 @@ const salonData = [
     name: "Sergi's Salon",
     location: "777 Fashion Blvd, City",
     phone: "2223334444",
-    email: "salon4@example.com",
+    email: "david@gmail.com",
     description:
       "Cutting-edge hair design and styling from award-winning stylists. We pride ourselves on innovation and excellence.",
     owner: null, // Will be set after user creation
@@ -237,10 +237,10 @@ const salonData = [
     },
   },
   {
-    name: "Brunella Salon",
+    name: "Olivia Salon",
     location: "999 Spa Lane, City",
     phone: "6667778888",
-    email: "salon5@example.com",
+    email: "olivia@gmail.com",
     description:
       "Relaxing spa and beauty treatments in a tranquil setting. Our holistic approach combines wellness with beauty.",
     owner: null, // Will be set after user creation
@@ -735,8 +735,8 @@ const seedDatabase = async () => {
 
     console.log("Database seeded successfully!");
     console.log("\nTest User Credentials:");
-    console.log("- Customer: john@example.com / password123");
-    console.log("- Business: salon1@example.com / password123");
+    console.log("- Customer: ayat@gmail.com/ password123");
+    console.log("- Business: sarah@gmail.com / password123");
     console.log("\nCompleted bookings that can be reviewed:");
     // completedBookings.forEach((booking, index) => {
     //   console.log(`- Booking ID: ${booking._id}`);
