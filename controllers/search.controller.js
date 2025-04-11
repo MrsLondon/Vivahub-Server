@@ -8,6 +8,7 @@
 
 const Service = require("../models/Service");
 const Salon = require("../models/Salon");
+const languages = require("../utils/languages");
 
 /**
  * Advanced search endpoint that supports multiple filters
@@ -130,10 +131,32 @@ exports.search = async (req, res, next) => {
       });
     }
 
+    // Enhance services with language details
+    const enhancedServices = services.map(service => {
+      const serviceObj = service.toObject();
+      
+      // If service has a language code, add language details
+      if (serviceObj.languageSpoken) {
+        // Handle both string and array formats for languageSpoken
+        const langCodes = Array.isArray(serviceObj.languageSpoken) 
+          ? serviceObj.languageSpoken 
+          : [serviceObj.languageSpoken];
+        
+        // Map language codes to full language objects
+        serviceObj.languageDetails = langCodes.map(code => {
+          const langInfo = languages.find(lang => lang.code === code) || 
+                          { code, name: code, country: 'xx' };
+          return langInfo;
+        });
+      }
+      
+      return serviceObj;
+    });
+
     // Return success response with data
     res.status(200).json({
       status: 'success',
-      data: services,
+      data: enhancedServices,
       pagination: {
         total,
         page: Number(page),
