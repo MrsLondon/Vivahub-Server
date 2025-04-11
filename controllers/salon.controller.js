@@ -58,6 +58,10 @@ exports.addSalon = async (req, res, next) => {
       closedDays,
       phone,
       owner: req.user.userId,
+      coordinates: {
+        lat: 51.5074, // Default to central London coordinates
+        lng: -0.1278
+      }
     });
 
     res.status(201).json(newSalon);
@@ -118,7 +122,7 @@ exports.getSalonByUser = async (req, res, next) => {
 // Update salon info (owner only)
 exports.updateSalon = async (req, res, next) => {
   const { id } = req.params;
-  const { name, location, email, openingHours, phone, closedDays } = req.body;
+  const { name, location, email, openingHours, phone, closedDays, coordinates } = req.body;
 
   try {
     const salon = await Salon.findById(id);
@@ -178,6 +182,7 @@ exports.updateSalon = async (req, res, next) => {
     if (email) salon.email = email;
     if (openingHours) salon.openingHours = openingHours;
     if (phone) salon.phone = phone;
+    if (coordinates) salon.coordinates = coordinates;
 
     const updatedSalon = await salon.save();
 
